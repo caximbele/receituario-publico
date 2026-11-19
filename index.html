@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- A página não usa a rede nem envia formulário: a política vale em qualquer hospedagem. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <title>Receituário</title>
+  <link rel="stylesheet" href="estilo.css">
+  <script type="module" src="tela.js"></script>
+</head>
+<body>
+  <!-- O topo fixo: quem é o paciente, quem prescreve e onde. Os dados vêm do iSaúde, pelo Favorito, ou da
+       demonstração, com a página aberta direto. -->
+  <header class="topo tela">
+    <h1>Receituário</h1>
+    <p class="selo" id="selo" hidden>Demonstração: dados fictícios, sem valor como receita</p>
+    <div class="campo" id="bloco-paciente-ficticio" hidden>
+      <label for="paciente-ficticio">Paciente fictício</label>
+      <select id="paciente-ficticio"></select>
+    </div>
+    <div class="atendimento">
+      <p id="topo-paciente"></p>
+      <p id="topo-atendimento"></p>
+    </div>
+  </header>
+
+  <!-- Aberta pelo Favorito: a espera pelos dados do iSaúde ou o motivo de eles não terem chegado. -->
+  <p class="estado tela" id="estado" role="status"></p>
+
+  <!-- Só aparece com os dados: os do Favorito ou os da demonstração. -->
+  <main class="tela" id="principal" hidden>
+    <!-- O Texto para colar da Receita anterior, copiado da Receita manual no histórico do iSaúde, volta como itens
+         (ADR 0008). -->
+    <section class="quadro" aria-labelledby="titulo-renovar">
+      <h2 id="titulo-renovar">Renovar</h2>
+      <label for="texto-renovar">Texto da Receita anterior</label>
+      <textarea id="texto-renovar" rows="2" spellcheck="false" aria-describedby="ajuda-renovar"></textarea>
+      <p class="ajuda" id="ajuda-renovar">Cole o texto da Receita manual de um atendimento anterior, copiado do histórico do iSaúde: só voltam as linhas de item que, montadas de novo, dão a mesma Frase.</p>
+      <div class="botoes"><button type="button" class="botao" id="renovar">Renovar</button></div>
+      <p class="resultado" id="resultado-renovar" role="status"></p>
+      <ul class="nao-reconhecidas" id="nao-reconhecidas" aria-label="Linhas que não voltaram"></ul>
+    </section>
+
+    <!-- Enter adiciona o item (ou grava a edição), e Esc limpa o formulário (ou cancela a edição). -->
+    <form id="item" class="quadro" autocomplete="off" novalidate aria-labelledby="titulo-item">
+      <h2 id="titulo-item">Novo item</h2>
+
+      <!-- Antes do Medicamento: o Tab do Medicamento vai direto à Dose, e Shift+Tab chega à caixa. -->
+      <label for="foraDoCatalogo"><input type="checkbox" id="foraDoCatalogo"> Fora do catálogo (texto livre)</label>
+
+      <div class="grade">
+        <div class="campo largo" id="bloco-texto-livre" hidden>
+          <label for="textoLivre">Medicamento fora do catálogo</label>
+          <input id="textoLivre" autocomplete="off" spellcheck="false" aria-describedby="ajuda-texto-livre msgs-textoLivre">
+          <p class="ajuda" id="ajuda-texto-livre">O nome, a concentração e a forma, como vão para a Frase.</p>
+          <div class="msgs" id="msgs-textoLivre"></div>
+        </div>
+        <div class="campo" id="bloco-fornecimento" hidden>
+          <label for="unidadeFornecimento">Unidade de fornecimento</label>
+          <select id="unidadeFornecimento" aria-describedby="msgs-unidadeFornecimento"></select>
+          <div class="msgs" id="msgs-unidadeFornecimento"></div>
+        </div>
+        <div class="campo largo" id="bloco-produto">
+          <label for="produto">Medicamento</label>
+          <div class="combobox">
+            <input id="produto" type="text" autocomplete="off" spellcheck="false"
+              role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lista-produtos"
+              aria-describedby="ajuda-busca msgs-produto">
+            <ul id="lista-produtos" class="resultados" role="listbox" aria-label="Produtos encontrados" hidden></ul>
+          </div>
+          <p class="ajuda" id="ajuda-busca">Nome, concentração ou forma, com ao menos 3 letras. Setas e Enter escolhem.</p>
+          <!-- A contagem só para o leitor de tela: a lista já a mostra a quem enxerga. -->
+          <p class="so-leitor" id="resumo-busca" role="status"></p>
+          <div class="msgs" id="msgs-produto"></div>
+        </div>
+        <!-- Escondida na fracionada e nas Etapas, que têm a Dose de cada Turno e de cada Etapa. -->
+        <div class="campo" id="bloco-dose">
+          <label for="dose">Dose</label>
+          <!-- Sem inputmode="decimal": o teclado numérico do celular não tem a barra de "1/2". -->
+          <input id="dose" autocomplete="off" aria-describedby="msgs-dose">
+          <div class="msgs" id="msgs-dose"></div>
+        </div>
+        <div class="campo">
+          <label for="unidade">Unidade de dose</label>
+          <select id="unidade" aria-describedby="msgs-unidade"></select>
+          <div class="msgs" id="msgs-unidade"></div>
+        </div>
+        <div class="campo">
+          <label for="viaAdministracao">Via de administração</label>
+          <select id="viaAdministracao" aria-describedby="msgs-viaAdministracao"></select>
+          <div class="msgs" id="msgs-viaAdministracao"></div>
+        </div>
+      </div>
+
+      <div class="grade">
+        <div class="campo">
+          <label for="posologia">Posologia</label>
+          <select id="posologia" aria-describedby="msgs-posologia">
+            <option value="vezes_ao_dia" selected>Vezes ao dia</option>
+            <option value="intervalo_horas">Intervalo de horas</option>
+            <option value="por_turno">Por Turno</option>
+            <!-- Uma Dose por Turno: na Montagem, é a Posologia por Turno sem o Turno escolhido. -->
+            <option value="fracionada">Fracionada</option>
+            <option value="vezes_por_semana">Vezes por semana</option>
+            <option value="vezes_por_mes">Vezes por mês</option>
+            <option value="dias_alternados">Dias alternados</option>
+            <option value="se_necessario">Se necessário</option>
+            <option value="dose_unica">Dose única</option>
+            <option value="etapas">Etapas (desmame)</option>
+          </select>
+          <div class="msgs" id="msgs-posologia"></div>
+        </div>
+        <!-- Um campo por tipo de Posologia, e só o do tipo escolhido aparece. O escondido guarda o que foi digitado. -->
+        <div class="campo" data-posologia="vezes_ao_dia">
+          <label for="vezes">Vezes ao dia</label>
+          <input id="vezes" inputmode="numeric" aria-describedby="msgs-vezes">
+          <div class="msgs" id="msgs-vezes"></div>
+        </div>
+        <div class="campo" data-posologia="intervalo_horas" hidden>
+          <label for="horas">A cada quantas horas</label>
+          <input id="horas" inputmode="numeric" aria-describedby="msgs-horas">
+          <div class="msgs" id="msgs-horas"></div>
+        </div>
+        <div class="campo" data-posologia="por_turno" hidden>
+          <label for="turno">Turno</label>
+          <select id="turno" aria-describedby="msgs-turno">
+            <option value="" selected>Escolha</option>
+            <option value="manha">Manhã</option>
+            <option value="tarde">Tarde</option>
+            <option value="noite">Noite</option>
+          </select>
+          <div class="msgs" id="msgs-turno"></div>
+        </div>
+        <div class="campo" data-posologia="fracionada" hidden>
+          <label for="dose-manha">Dose pela manhã</label>
+          <input id="dose-manha" autocomplete="off" aria-describedby="msgs-dose-manha">
+          <div class="msgs" id="msgs-dose-manha"></div>
+        </div>
+        <div class="campo" data-posologia="fracionada" hidden>
+          <label for="dose-tarde">Dose à tarde</label>
+          <input id="dose-tarde" autocomplete="off" aria-describedby="msgs-dose-tarde">
+          <div class="msgs" id="msgs-dose-tarde"></div>
+        </div>
+        <div class="campo" data-posologia="fracionada" hidden>
+          <label for="dose-noite">Dose à noite</label>
+          <input id="dose-noite" autocomplete="off" aria-describedby="ajuda-turnos msgs-dose-noite">
+          <p class="ajuda" id="ajuda-turnos">Deixe em branco o Turno sem Dose.</p>
+          <div class="msgs" id="msgs-dose-noite"></div>
+        </div>
+        <div class="campo" data-posologia="vezes_por_semana" hidden>
+          <label for="vezes-semana">Vezes por semana</label>
+          <input id="vezes-semana" inputmode="numeric" aria-describedby="msgs-vezes-semana">
+          <div class="msgs" id="msgs-vezes-semana"></div>
+        </div>
+        <div class="campo" data-posologia="vezes_por_mes" hidden>
+          <label for="vezes-mes">Vezes por mês</label>
+          <input id="vezes-mes" inputmode="numeric" aria-describedby="msgs-vezes-mes">
+          <div class="msgs" id="msgs-vezes-mes"></div>
+        </div>
+        <div class="campo" data-posologia="dias_alternados" hidden>
+          <label for="aCadaDias">A cada quantos dias</label>
+          <input id="aCadaDias" inputmode="numeric" aria-describedby="ajuda-aCadaDias msgs-aCadaDias">
+          <p class="ajuda" id="ajuda-aCadaDias">2 é dia sim, dia não.</p>
+          <div class="msgs" id="msgs-aCadaDias"></div>
+        </div>
+        <div class="campo" data-posologia="se_necessario" hidden>
+          <label for="sintoma">Condição do se necessário</label>
+          <select id="sintoma" aria-describedby="msgs-sintoma"></select>
+          <div class="msgs" id="msgs-sintoma"></div>
+        </div>
+        <div class="campo" data-posologia="se_necessario" hidden>
+          <label for="horas-minimas">Intervalo mínimo, em horas</label>
+          <input id="horas-minimas" inputmode="numeric" aria-describedby="msgs-horas-minimas">
+          <div class="msgs" id="msgs-horas-minimas"></div>
+        </div>
+        <div class="campo" data-posologia="se_necessario" hidden>
+          <label for="maximoPorDia">No máximo, vezes ao dia (opcional)</label>
+          <input id="maximoPorDia" inputmode="numeric" aria-describedby="msgs-maximoPorDia">
+          <div class="msgs" id="msgs-maximoPorDia"></div>
+        </div>
+        <div class="campo" id="bloco-uso-continuo">
+          <label class="caixa" for="usoContinuo"><input type="checkbox" id="usoContinuo" aria-describedby="msgs-usoContinuo"> Uso contínuo</label>
+          <div class="msgs" id="msgs-usoContinuo"></div>
+        </div>
+        <!-- Escondida no Uso contínuo, que usa o Período de dispensação. -->
+        <div class="campo" id="bloco-duracao">
+          <label for="duracao">Duração</label>
+          <div class="par">
+            <input id="duracao" inputmode="numeric" aria-describedby="msgs-duracao">
+            <select id="duracao-unidade" aria-label="Unidade da duração">
+              <option value="dia">dias</option>
+              <option value="semana">semanas</option>
+              <option value="mes">meses</option>
+            </select>
+          </div>
+          <div class="msgs" id="msgs-duracao"></div>
+        </div>
+        <div class="campo" id="bloco-periodo" hidden>
+          <label for="periodoDispensacao">Período de dispensação, em dias</label>
+          <input id="periodoDispensacao" inputmode="numeric" aria-describedby="ajuda-periodo msgs-periodoDispensacao">
+          <p class="ajuda" id="ajuda-periodo">Em branco, vale o padrão do Tipo de receita.</p>
+          <div class="msgs" id="msgs-periodoDispensacao"></div>
+        </div>
+      </div>
+
+      <fieldset class="etapas" data-posologia="etapas" hidden>
+        <legend>Etapas</legend>
+        <p class="ajuda" id="ajuda-etapas">Cada Etapa começa quando a anterior termina. A Dose vai na Unidade de dose escolhida acima.</p>
+        <div class="campo">
+          <label for="numero-de-etapas">Quantas Etapas</label>
+          <select id="numero-de-etapas" aria-describedby="ajuda-etapas">
+            <option selected>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+          </select>
+        </div>
+        <!-- As Etapas saem do modelo abaixo. -->
+        <div id="etapas"></div>
+        <p class="ajuda" id="conta-etapas"></p>
+      </fieldset>
+
+      <!-- Os atalhos preenchem os campos, que continuam editáveis. Ficam fora da ordem do Tab. -->
+      <div class="atalhos" role="group" aria-label="Atalhos de Posologia">
+        <span>Posologia:</span>
+        <button type="button" tabindex="-1" data-posologia-atalho="vezes_ao_dia" data-campo="vezes" data-valor="1">1x/dia</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="vezes_ao_dia" data-campo="vezes" data-valor="2">2x/dia</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="intervalo_horas" data-campo="horas" data-valor="12">12/12 h</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="intervalo_horas" data-campo="horas" data-valor="8">8/8 h</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="intervalo_horas" data-campo="horas" data-valor="6">6/6 h</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="por_turno" data-campo="turno" data-valor="manha">pela manhã</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="por_turno" data-campo="turno" data-valor="noite">à noite</button>
+        <button type="button" tabindex="-1" data-posologia-atalho="se_necessario" data-campo="sintoma">se necessário</button>
+      </div>
+      <div class="atalhos" id="atalhos-duracao" role="group" aria-label="Atalhos de duração">
+        <span>Duração:</span>
+        <button type="button" tabindex="-1" data-campo="duracao" data-valor="3">3 dias</button>
+        <button type="button" tabindex="-1" data-campo="duracao" data-valor="5">5 dias</button>
+        <button type="button" tabindex="-1" data-campo="duracao" data-valor="7">7 dias</button>
+        <button type="button" tabindex="-1" data-campo="duracao" data-valor="10">10 dias</button>
+        <button type="button" tabindex="-1" data-campo="duracao" data-valor="14">14 dias</button>
+        <button type="button" tabindex="-1" data-campo="usoContinuo">Uso contínuo</button>
+      </div>
+
+      <div class="grade">
+        <!-- Escondida nas Etapas, que têm a Quantidade a dispensar de cada Etapa. -->
+        <div class="campo" id="bloco-quantidade">
+          <label for="quantidadeDispensar">Quantidade a dispensar</label>
+          <!-- Em branco, vale a sugerida, que aparece no campo; o número digitado é o Ajuste manual. -->
+          <input id="quantidadeDispensar" inputmode="numeric" aria-describedby="ajuda-quantidade msgs-quantidadeDispensar">
+          <p class="ajuda" id="ajuda-quantidade"></p>
+          <div class="msgs" id="msgs-quantidadeDispensar"></div>
+        </div>
+        <div class="campo largo">
+          <label for="recomendacoes">Recomendações (opcional)</label>
+          <!-- Uma linha só: o Texto para colar leva o item numa linha, e a Renovação lê linha a linha. -->
+          <input id="recomendacoes" autocomplete="off" aria-describedby="msgs-recomendacoes">
+          <div class="msgs" id="msgs-recomendacoes"></div>
+        </div>
+        <div class="campo">
+          <label for="inicio">Início do tratamento</label>
+          <input id="inicio" type="date" aria-describedby="ajuda-inicio msgs-inicio">
+          <p class="ajuda" id="ajuda-inicio">Em branco, a data de emissão.</p>
+          <div class="msgs" id="msgs-inicio"></div>
+        </div>
+        <!-- Só aparece quando a Montagem a pede: a Receita de Controle Especial acima do limite de tratamento. -->
+        <div class="campo largo" id="bloco-justificativa" hidden>
+          <label for="justificativa">Justificativa, com o CID</label>
+          <input id="justificativa" autocomplete="off" aria-describedby="ajuda-justificativa msgs-justificativa">
+          <p class="ajuda" id="ajuda-justificativa">Por exemplo: "CID F33.2: tratamento de manutenção". Sai impressa nas 2 Vias.</p>
+          <div class="msgs" id="msgs-justificativa"></div>
+        </div>
+      </div>
+
+      <!-- O que não é de nenhum campo da tela. -->
+      <div class="msgs" id="msgs-geral"></div>
+      <p class="frase-ao-vivo" id="frase" aria-live="polite"></p>
+
+      <div class="botoes">
+        <button type="button" class="botao primario" id="salvar">Adicionar (Enter)</button>
+        <button type="button" class="botao" id="limpar">Limpar (Esc)</button>
+      </div>
+    </form>
+
+    <section class="quadro" aria-labelledby="titulo-itens">
+      <h2 id="titulo-itens">Itens</h2>
+      <ol class="itens-da-lista" id="itens"></ol>
+      <p class="vazio" id="sem-itens">Nenhum item.</p>
+    </section>
+  </main>
+
+  <!-- A barra fixa: as Receitas que vão sair, os alertas e os bloqueios, e os botões. -->
+  <footer class="barra tela" id="barra" aria-label="Resumo das Receitas" hidden>
+    <div class="linha">
+      <p id="receitas-que-saem"></p>
+      <div class="vias">
+        <label for="vias-por-folha">Vias por folha</label>
+        <select id="vias-por-folha">
+          <option>1</option>
+          <option selected>2</option>
+        </select>
+      </div>
+      <button type="button" class="botao" id="ver-previa">Ver prévia</button>
+      <button type="button" class="botao primario" id="imprimir" aria-describedby="motivo-desligado">Imprimir</button>
+      <button type="button" class="botao" id="copiar" aria-describedby="motivo-desligado">Copiar texto</button>
+      <p class="alerta" id="motivo-desligado"></p>
+      <!-- Não some sozinho: só quando a lista muda e o texto copiado deixa de ser o da Receita. -->
+      <p id="copiado" aria-live="polite"></p>
+    </div>
+    <div class="msgs" id="avisos-da-barra"></div>
+  </footer>
+
+  <!-- A prévia, por cima da tela: Esc fecha (é o próprio <dialog>). -->
+  <dialog class="previa tela" id="previa" aria-labelledby="titulo-previa">
+    <div class="cabeca">
+      <h2 id="titulo-previa">Prévia do impresso</h2>
+      <button type="button" class="botao" id="fechar-previa">Fechar (Esc)</button>
+    </div>
+    <div class="msgs" id="avisos-previa"></div>
+    <div id="folhas-previa"></div>
+  </dialog>
+  <!-- O que o papel leva: as mesmas folhas da prévia, postas aqui antes de imprimir. -->
+  <div class="impressao" id="impressao"></div>
+
+  <!-- O modelo de uma Etapa: a tela o copia uma vez por Etapa, com {i} trocado pelo índice, a partir de 0, e {n} pelo
+       número. Os ids são o campo do erro da Montagem: "etapas[0].dose". -->
+  <template id="modelo-etapa">
+    <fieldset class="etapa grade">
+      <legend>Etapa {n}</legend>
+      <div class="campo">
+        <label for="etapas[{i}].dose">Dose</label>
+        <input id="etapas[{i}].dose" autocomplete="off" aria-describedby="msgs-etapas[{i}].dose">
+        <div class="msgs" id="msgs-etapas[{i}].dose"></div>
+      </div>
+      <div class="campo">
+        <label for="etapas[{i}].posologia">Posologia</label>
+        <select id="etapas[{i}].posologia" aria-describedby="msgs-etapas[{i}].posologia">
+          <option value="vezes_ao_dia" selected>Vezes ao dia</option>
+          <option value="intervalo_horas">Intervalo de horas</option>
+          <option value="vezes_por_semana">Vezes por semana</option>
+          <option value="vezes_por_mes">Vezes por mês</option>
+          <option value="dias_alternados">Dias alternados</option>
+        </select>
+        <div class="msgs" id="msgs-etapas[{i}].posologia"></div>
+      </div>
+      <div class="campo">
+        <!-- O rótulo muda com a Posologia da Etapa. -->
+        <label for="etapas[{i}].numero">Vezes ao dia</label>
+        <input id="etapas[{i}].numero" inputmode="numeric" aria-describedby="msgs-etapas[{i}].numero">
+        <div class="msgs" id="msgs-etapas[{i}].numero"></div>
+      </div>
+      <div class="campo">
+        <label for="etapas[{i}].duracao">Duração</label>
+        <div class="par">
+          <input id="etapas[{i}].duracao" inputmode="numeric" aria-describedby="msgs-etapas[{i}].duracao">
+          <select id="etapas[{i}].duracao-unidade" aria-label="Unidade da duração da Etapa {n}">
+            <option value="dia" selected>dias</option>
+            <option value="semana">semanas</option>
+            <option value="mes">meses</option>
+          </select>
+        </div>
+        <div class="msgs" id="msgs-etapas[{i}].duracao"></div>
+      </div>
+      <div class="campo">
+        <label for="etapas[{i}].quantidadeDispensar">Quantidade a dispensar</label>
+        <input id="etapas[{i}].quantidadeDispensar" inputmode="numeric" aria-describedby="msgs-etapas[{i}].quantidadeDispensar">
+        <div class="msgs" id="msgs-etapas[{i}].quantidadeDispensar"></div>
+      </div>
+    </fieldset>
+  </template>
+</body>
+</html>

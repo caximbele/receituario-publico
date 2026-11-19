@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- A mesma política do index.html: o que o Prescritor digita não sai da página. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <title>Criar o favorito · Receituário</title>
+  <link rel="stylesheet" href="estilo.css">
+  <script type="module" src="criar-favorito.js"></script>
+</head>
+<body>
+  <main class="tela">
+    <h1>Criar o favorito</h1>
+    <p>O favorito confere quem está logado no iSaúde, lê o paciente na tela do atendimento ou da renovação de receita e abre o Receituário com os dados. Preencha os seus dados e os das unidades em que você atende.</p>
+
+    <!-- Nunca é enviado: sem botão de envio, e a política recusa o envio. -->
+    <form id="dados" autocomplete="off" novalidate>
+      <fieldset class="quadro">
+        <legend>Prescritor</legend>
+        <div class="grade">
+          <div class="campo largo">
+            <label for="prescritor.nome">Nome</label>
+            <input id="prescritor.nome" spellcheck="false">
+          </div>
+          <div class="campo">
+            <label for="prescritor.conselho">Conselho</label>
+            <input id="prescritor.conselho" spellcheck="false" aria-describedby="ajuda-conselho">
+            <p class="ajuda" id="ajuda-conselho">Por exemplo, CRM.</p>
+          </div>
+          <div class="campo">
+            <label for="prescritor.numero">Número</label>
+            <input id="prescritor.numero" inputmode="numeric">
+          </div>
+          <div class="campo">
+            <label for="prescritor.uf">UF</label>
+            <input id="prescritor.uf" spellcheck="false">
+          </div>
+          <div class="campo largo">
+            <label for="prescritor.cargo">Cargo (opcional)</label>
+            <input id="prescritor.cargo">
+          </div>
+          <div class="campo largo">
+            <label for="prescritor.nomeNoIsaude">Nome no iSaúde</label>
+            <input id="prescritor.nomeNoIsaude" spellcheck="false" aria-describedby="ajuda-prescritor-no-isaude">
+            <p class="ajuda" id="ajuda-prescritor-no-isaude">Como aparece no topo do iSaúde, depois do número e do " - ".</p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- As unidades saem do modelo abaixo. -->
+      <div id="unidades"></div>
+      <div class="botoes"><button type="button" class="botao" id="acrescentar-unidade">Acrescentar unidade</button></div>
+    </form>
+
+    <section class="quadro" aria-labelledby="titulo-falta">
+      <h2 id="titulo-falta">O que falta</h2>
+      <div id="faltam" role="status"></div>
+    </section>
+
+    <section class="quadro" id="bloco-link" aria-labelledby="titulo-link" hidden>
+      <h2 id="titulo-link">O favorito</h2>
+      <p><a class="link-favorito" id="link-favorito">Receituário</a></p>
+      <p>Arraste o link Receituário até a barra de favoritos do Chrome. Se a barra não aparece, use Ctrl+Shift+B.</p>
+      <p>O favorito leva os seus dados e os das unidades. No fim do plantão, remova a sua conta do Google deste Chrome.</p>
+      <p>Nada do que você digitou aqui é gravado. Para mudar um dado, preencha tudo de novo e recrie o favorito.</p>
+      <p>Este favorito abre o Receituário em <span id="endereco"></span>.</p>
+    </section>
+  </main>
+
+  <!-- O modelo de uma unidade: a página o copia com {i} trocado por um número que nunca se repete, para os ids não
+       repetirem depois de tirar uma unidade. A legenda leva a posição. -->
+  <template id="modelo-unidade">
+    <fieldset class="quadro" data-unidade="{i}">
+      <legend>Unidade</legend>
+      <div class="grade">
+        <div class="campo largo">
+          <label for="unidades[{i}].nome">Nome</label>
+          <input id="unidades[{i}].nome">
+        </div>
+        <div class="campo">
+          <label for="unidades[{i}].cnes">CNES</label>
+          <input id="unidades[{i}].cnes" inputmode="numeric">
+        </div>
+        <div class="campo largo">
+          <label for="unidades[{i}].endereco">Endereço</label>
+          <input id="unidades[{i}].endereco">
+        </div>
+        <div class="campo">
+          <label for="unidades[{i}].telefone">Telefone</label>
+          <input id="unidades[{i}].telefone" type="tel">
+        </div>
+        <div class="campo">
+          <label for="unidades[{i}].municipio">Município</label>
+          <input id="unidades[{i}].municipio">
+        </div>
+        <div class="campo">
+          <label for="unidades[{i}].uf">UF</label>
+          <input id="unidades[{i}].uf" spellcheck="false">
+        </div>
+        <div class="campo largo">
+          <label for="unidades[{i}].cabecalho">Cabeçalho</label>
+          <textarea id="unidades[{i}].cabecalho" rows="3" aria-describedby="ajuda-cabecalho-{i}"></textarea>
+          <p class="ajuda" id="ajuda-cabecalho-{i}">Uma linha do cabeçalho por linha, como "PREFEITURA MUNICIPAL DE …".</p>
+        </div>
+        <div class="campo largo">
+          <label for="unidades[{i}].nomeNoIsaude">Nome no iSaúde</label>
+          <input id="unidades[{i}].nomeNoIsaude" spellcheck="false" aria-describedby="ajuda-unidade-no-isaude-{i}">
+          <p class="ajuda" id="ajuda-unidade-no-isaude-{i}">Como aparece no topo do iSaúde, antes do " - ".</p>
+        </div>
+      </div>
+      <div class="botoes"><button type="button" class="botao tirar">Tirar esta unidade</button></div>
+    </fieldset>
+  </template>
+</body>
+</html>

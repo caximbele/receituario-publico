@@ -1,0 +1,172 @@
+/* A tela tem uma coluna, na ordem do trabalho (spec da Fase 2, seção 2): o topo fixo com o paciente, Renovar, o
+   formulário do item, a lista e a barra fixa no rodapé. Cabe numa tela de 1366×768. Nada é indicado só por cor: o erro, o alerta e o bloqueio levam o nome. */
+:root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.35; }
+[hidden] { display: none !important; } /* vence o display: grid e flex dos blocos */
+/* O campo que recebe o foco não fica embaixo do topo nem da barra, que são fixos.
+   shortcut: alturas fixas, as maiores do topo e da barra em 1366×768; medir com JavaScript se elas passarem disso. */
+html { scroll-padding: 8rem 0 10rem; }
+body { margin: 0; background: #f1f5f9; color: #1e293b; }
+:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+
+/* O topo ocupa a largura toda, com o conteúdo na coluna da tela. */
+.topo { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: end; gap: .25rem 1.5rem; padding: .5rem max(1rem, calc((100% - 72rem) / 2)); background: #fff; border-bottom: 1px solid #cbd5e1; }
+.topo h1 { margin: 0; font-size: 1.15rem; }
+.selo { margin: 0; padding: .1rem .5rem; border: 2px solid #7a4b00; border-radius: 4px; color: #7a4b00; font-weight: 700; }
+.topo .campo label { margin-top: 0; }
+.atendimento p { margin: 0; }
+#topo-paciente { font-weight: 700; }
+#topo-atendimento { font-size: .9rem; color: #475569; }
+/* A espera e o erro, no lugar do formulário. Vazio, o estado fica sem altura, mas presente, para a mudança ser lida. */
+.estado { max-width: 72rem; margin: 2rem auto; padding: 0 1rem; font-size: 1.1rem; }
+.estado:empty { margin: 0; }
+
+main.tela { max-width: 72rem; margin: 1rem auto; padding: 0 1rem; }
+.quadro { margin-bottom: 1rem; padding: .75rem 1rem 1rem; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; }
+.quadro h2 { margin: 0; font-size: 1.1rem; }
+/* A página "Criar o favorito": o Prescritor e cada unidade num quadro com legenda, e o link com cara de botão, para
+   arrastar até a barra de favoritos. */
+fieldset.quadro { min-width: 0; }
+fieldset.quadro > legend { font-size: 1.1rem; font-weight: 700; }
+.link-favorito { display: inline-block; padding: .4rem 1rem; border: 2px solid #1b3a5c; border-radius: 999px; color: #1b3a5c; font-weight: 700; }
+
+/* Os campos lado a lado, cada um com a largura mínima dele, dobrando para a linha de baixo quando falta espaço. */
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0 1rem; align-items: start; }
+.grade > .largo { grid-column: span 2; }
+label { display: block; margin: .6rem 0 .25rem; font-weight: 600; }
+label.caixa { margin-top: 2.1rem; }
+input, select, button { font: inherit; }
+input, select { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1px solid #94a3b8; border-radius: 4px; background: #fff; color: #000; }
+input[type="checkbox"] { width: auto; margin: 0 .4rem 0 0; vertical-align: -.1rem; }
+input::placeholder { color: #475569; } /* a sugerida e o padrão, que valem com o campo em branco */
+option:disabled { color: #94a3b8; }
+/* As Etapas, cada uma no seu quadro, dentro do quadro delas. */
+fieldset.etapas, fieldset.etapa { margin: .75rem 0 0; padding: 0 .75rem .5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+fieldset legend { padding: 0 .25rem; font-weight: 600; }
+#numero-de-etapas { width: auto; }
+.par { display: flex; gap: .5rem; }
+.par > select { width: auto; }
+[aria-invalid="true"] { border: 2px solid #a51d2d; }
+.msgs p, .ajuda { margin: .2rem 0 0; font-size: .9rem; }
+.ajuda { color: #475569; }
+.erro { color: #a51d2d; font-weight: 600; }
+.alerta { color: #7a4b00; font-weight: 600; }
+
+.atalhos { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .6rem; }
+.atalhos span { min-width: 5rem; font-size: .9rem; color: #475569; }
+.atalhos button { padding: .1rem .6rem; border: 1px solid #94a3b8; border-radius: 999px; background: #f8fafc; color: #1e293b; font-size: .85rem; cursor: pointer; }
+
+.frase-ao-vivo { margin: .75rem 0 0; padding: .5rem .75rem; border-left: 4px solid #1b3a5c; background: #f1f5f9; }
+/* Vazias, as regiões que o leitor de tela lê ficam sem altura, mas presentes: com display: none, a mudança não é lida. */
+.frase-ao-vivo:empty, .resultado:empty { margin: 0; padding: 0; border: 0; }
+.botoes { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.botao { padding: .4rem 1rem; border: 1px solid #64748b; border-radius: 6px; background: #fff; color: #1e293b; font-weight: 600; cursor: pointer; }
+.botao.primario { border-color: #1b3a5c; background: #1b3a5c; color: #fff; }
+/* Desligado: o motivo vai em texto ao lado; a borda tracejada não depende da cor. */
+.botao:disabled { border: 1px dashed #64748b; background: #e2e8f0; color: #475569; cursor: not-allowed; }
+
+/* Renovar: o campo do texto colado e as linhas que não voltaram. */
+textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1px solid #94a3b8; border-radius: 4px; font: inherit; resize: vertical; }
+.resultado { margin: .5rem 0 0; }
+.nao-reconhecidas:empty { display: none; }
+.nao-reconhecidas { margin: .5rem 0 0; padding-left: 1.25rem; }
+.nao-reconhecidas li { padding: .3rem 0; border-bottom: 1px solid #e2e8f0; }
+.nao-reconhecidas p { margin: 0; }
+.nao-reconhecidas .botao { padding: .1rem .6rem; font-size: .85rem; }
+
+/* A barra fixa no rodapé, na largura toda, com o conteúdo na coluna da tela, como o topo. */
+.barra { position: sticky; bottom: 0; z-index: 10; padding: .5rem max(1rem, calc((100% - 72rem) / 2)); background: #fff; border-top: 1px solid #cbd5e1; box-shadow: 0 -2px 6px rgb(0 0 0 / .08); }
+.barra .linha { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1rem; }
+.barra p { margin: 0; }
+#motivo-desligado:empty { display: none; }
+.barra .vias label { display: inline; margin: 0 .35rem 0 0; }
+.barra .vias select { width: auto; }
+.barra .msgs p { margin-top: .2rem; }
+/* Muitos alertas rolam dentro da barra, para ela não tomar a tela. */
+#avisos-da-barra { max-height: 4.5rem; overflow-y: auto; }
+
+/* A prévia, por cima da tela, com as folhas do tamanho do papel. */
+.previa { width: 100%; padding: 0; border: 1px solid #64748b; border-radius: 6px; background: #e2e8f0; }
+.previa::backdrop { background: rgb(0 0 0 / .5); }
+.previa .cabeca { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: .5rem 1rem; background: #fff; border-bottom: 1px solid #cbd5e1; }
+.previa h2 { margin: 0; font-size: 1.1rem; }
+#avisos-previa { padding: 0 1rem; }
+#avisos-previa:empty { display: none; }
+#folhas-previa > .vazio { padding: 1rem; }
+
+/* A lista da busca flutua sob o campo, com o Produto em foco contornado, e não só colorido. */
+.combobox { position: relative; }
+.resultados { position: absolute; top: 100%; left: 0; right: 0; z-index: 20; max-height: 16rem; overflow-y: auto; margin: 0; padding: 0; list-style: none; background: #fff; border: 1px solid #94a3b8; box-shadow: 0 4px 12px rgb(0 0 0 / .15); }
+.resultados li { padding: .3rem .5rem; border-bottom: 1px solid #e2e8f0; cursor: default; }
+.resultados li[aria-selected="true"] { background: #dbeafe; outline: 2px solid #1a5fb4; outline-offset: -2px; }
+.resultados .descricao { margin: 0; font-size: .85rem; color: #475569; }
+.resultados .sem-escolha { color: #475569; }
+/* Só para o leitor de tela. */
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.itens-da-lista { margin: .5rem 0 0; padding-left: 1.75rem; }
+.itens-da-lista li { padding: .4rem 0; border-bottom: 1px solid #e2e8f0; }
+.itens-da-lista p { margin: 0; }
+.itens-da-lista .msgs p, .itens-da-lista .erro, .itens-da-lista .alerta { font-size: .9rem; }
+.itens-da-lista .acoes { margin-top: .25rem; }
+.itens-da-lista .botao { padding: .1rem .6rem; font-size: .85rem; }
+.em-edicao { background: #fef9c3; }
+.vazio { margin: .5rem 0 0; color: #475569; }
+
+/* A folha, a mesma na tela (prévia) e no papel: A4 retrato com uma Via, ou A4 paisagem com as 2 Vias lado a lado em
+   blocos A5 retrato (ADR 0006). A página nomeada põe cada folha na sua orientação. */
+@page { size: A4; margin: 0; } /* margem 0: o navegador não imprime cabeçalho e rodapé próprios, como a data da impressão */
+@page paisagem { size: A4 landscape; }
+.folha { box-sizing: border-box; display: flex; width: 210mm; max-width: 100%; min-height: 297mm; margin: 1rem auto; border: 1px solid #999; background: #fff; }
+.folha.paisagem { page: paisagem; width: 297mm; min-height: 210mm; }
+/* A folha em que se mede o que cabe (ADR 0006): fora da vista, na largura do papel, sem a borda e na altura do que leva. */
+.folha.medida { position: absolute; visibility: hidden; max-width: none; min-height: 0; margin: 0; border: 0; }
+/* O impresso compacto (spec da Fase 2, seção 4): sem brasão nem logo, o cabeçalho e o paciente em poucas linhas e cada
+   item em 2, para sair menos folhas a assinar. A letra do item não fica abaixo de 10 pt. overflow: hidden só corta a
+   marca d'água girada: a Via que não cabe continua na folha seguinte. */
+.via { flex: 1; min-width: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 8mm 12mm; font-size: 10pt; line-height: 1.3; color: #000; }
+.via p { margin: 0; }
+.via footer { flex: 1; display: flex; flex-direction: column; }
+.cabecalho { text-align: center; }
+.cabecalho .institucional { font-weight: 700; text-transform: uppercase; }
+.via .titulo { margin: 1.5mm 0; text-align: center; font-size: 10.5pt; text-transform: uppercase; }
+.paciente { padding: 1mm 0; border-top: 1px solid #000; border-bottom: 1px solid #000; }
+.itens { list-style: none; margin: 1.5mm 0 0; padding: 0; }
+.item { break-inside: avoid; margin-bottom: 1.5mm; }
+.item .cab { display: flex; justify-content: space-between; gap: 4mm; }
+.item .cab b { text-align: right; }
+.item .pos { padding-left: 4mm; }
+.assinatura { width: 85mm; max-width: 100%; margin: 10mm auto 0; padding-top: 1mm; border-top: 1px solid #000; text-align: center; }
+/* Blocos que a farmácia preenche, lado a lado, como no modelo da Anvisa: cada campo com uma linha em branco. */
+/* O bloco com mais de 2 campos, como o do comprador, os põe em duas colunas. */
+.em-branco { display: flex; gap: 3mm; margin-top: 4mm; }
+.bloco-em-branco { flex: 1; border: 1px solid #000; padding: 1mm 2.5mm 1.5mm; font-size: .75rem; }
+.bloco-em-branco.em-colunas { flex: 2; }
+.bloco-em-branco h4 { margin: 0; font-size: .75rem; text-transform: uppercase; }
+.bloco-em-branco dl { display: grid; grid-template-columns: auto 1fr; column-gap: 2mm; margin: 0; align-items: end; }
+.bloco-em-branco.em-colunas dl { grid-template-columns: auto 1fr auto 1fr; }
+/* No bloco estreito, como o do fornecedor, a linha vai embaixo do campo, para caber a assinatura do farmacêutico. */
+.bloco-em-branco:not(.em-colunas) dl { grid-template-columns: 1fr; }
+.bloco-em-branco:not(.em-colunas) dd { min-height: 6mm; }
+.bloco-em-branco dt { white-space: nowrap; margin-top: .5mm; }
+.bloco-em-branco dd { margin: 0; border-bottom: 1px solid #000; min-height: 4mm; }
+.via .marca { margin-top: auto; padding: .25rem; border: 2px solid #000; text-align: center; font-weight: 700; }
+/* O nome do paciente e "Folha {n} de {m}", no pé de toda folha, logo abaixo da marca na última. */
+.via .rodape { margin: auto 0 0; padding-top: 1mm; text-align: right; font-size: 9pt; }
+.via .marca + .rodape { margin-top: 1mm; }
+.marca-fundo { position: absolute; top: 45%; left: -10%; right: -10%; margin: 0; transform: rotate(-30deg); text-align: center; font-size: 2.6rem; font-weight: 700; color: rgba(0, 0, 0, .12); pointer-events: none; }
+
+/* No bloco A5, a linha pontilhada entre as Vias e as margens mais justas. O cabeçalho é o mesmo da folha retrato. */
+.paisagem .via { padding: 6mm 8mm; }
+.paisagem .via + .via { border-left: 1px dotted #000; }
+.paisagem .marca-fundo { font-size: 2rem; }
+
+/* Na tela, as folhas só aparecem na prévia; no papel, só as da impressão. */
+@media screen { .impressao { display: none; } }
+@media print {
+  .tela { display: none; }
+  body { padding: 0; background: #fff; }
+  /* Um fio abaixo da folha, para o arredondamento não empurrar uma folha em branco. */
+  .folha { width: auto; min-height: 296.5mm; margin: 0; border: none; }
+  .folha.paisagem { width: auto; min-height: 209.5mm; }
+  .folha:not(:last-child) { break-after: page; }
+}
