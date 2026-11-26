@@ -1,0 +1,146 @@
+# Padrões para conferir
+
+Lista feita a partir do catálogo do prescritor antigo (`Cristovao/Prescritor/catalogo.js`) e revista em 26/11/2026
+pela bula e pela literatura. Cada Padrão foi passado pelo `montarReceita` desta página: a coluna "Na Receita" é o que
+sairia impresso, com as Recomendações depois da Quantidade.
+
+- **Mudou** marca o que a revisão corrigiu. As durações que não vieram da bula foram confirmadas pelo Prescritor em
+  26/11/2026. Esta lista virou `dados/padroes.js`, e `tests/padroes.test.js` confere cada Padrão.
+- A fonte de cada Padrão está na última coluna. As bulas são de fabricantes e de sites que as reproduzem: o Bulário da
+  ANVISA não abriu pelas ferramentas, e algumas são versões antigas. A RENAME e o Formulário Terapêutico Nacional não
+  foram consultados.
+- Todos os Padrões abaixo saem iguais depois de irem para o Texto para colar e voltarem pela Renovação.
+- Os nomes à esquerda são só da lista; na Receita sai o nome do catálogo.
+
+## Dor e febre
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Dipirona 500 mg — dor | Tomar 02 comprimidos por via oral, se dor, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 5 dias. Quantidade: 40 comprimidos. Não passar de 8 comprimidos por dia. | simples | 5 dias. Máximo de 4 vezes ao dia (4 g/dia). | [novalgina](https://www.novalgina.com.br/produtos/adulto/1g-comprimido/bula) |
+| Dipirona 500 mg — febre | Tomar 02 comprimidos por via oral, se febre, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 5 dias. Quantidade: 40 comprimidos. Febre é temperatura maior que 37,7 graus. Não passar de 8 comprimidos por dia. | simples | 5 dias. Máximo de 4 vezes ao dia. | [novalgina](https://www.novalgina.com.br/produtos/adulto/1g-comprimido/bula) |
+| Paracetamol 500 mg — dor | Tomar 02 comprimidos por via oral, se dor, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 5 dias. Quantidade: 40 comprimidos. Não passar de 8 comprimidos por dia. Não usar com bebida alcoólica nem com outro remédio que tenha paracetamol. | simples | **Mudou:** 1 → 2 comprimidos (1 g), que é a dose eficaz do adulto. Máximo 4 g/dia. | [tylenol](https://consultaremedios.com.br/tylenol-comprimido/bula) |
+| Paracetamol 500 mg — febre | Tomar 02 comprimidos por via oral, se febre, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 5 dias. Quantidade: 40 comprimidos. Febre é temperatura maior que 37,7 graus. Não passar de 8 comprimidos por dia. Não usar com bebida alcoólica nem com outro remédio que tenha paracetamol. | simples | **Mudou:** 1 → 2 comprimidos. | [tylenol](https://consultaremedios.com.br/tylenol-comprimido/bula) |
+| Paracetamol + codeína 500+30 mg | Tomar 01 comprimido por via oral, se dor, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 3 dias. Quantidade: 12 (doze) comprimidos. Usar só se dor intensa. Causa sono e prisão de ventre: não dirigir, não usar com bebida alcoólica nem com outro remédio que tenha paracetamol. | Controle Especial | 3 dias. Pede o CPF do paciente. Recomendação de sono e álcool. | [tylex](https://uploads.consultaremedios.com.br/drug_leaflet/pro/Bula-Tylex-Profissional-Consulta-Remedios.pdf) |
+| Tramadol 50 mg | Tomar 01 comprimido por via oral, se dor, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 3 dias. Quantidade: 12 (doze) comprimidos. Usar só se dor moderada a intensa. Causa sono e enjoo: não dirigir e não usar com bebida alcoólica. | Controle Especial | 3 dias. Pede o CPF do paciente. Máximo 400 mg/dia. | [tramal](https://www.bulas.med.br/bula/tramal-capsula-profissional) |
+| Ibuprofeno 600 mg | Tomar 01 comprimido por via oral, a cada 8 horas, por 5 dias. Quantidade: 15 comprimidos. Tomar sempre após alimentação. | simples |  | [ibuprofeno](https://www.bulas.med.br/bula/ibuprofeno-comprimido-600-mg) |
+| Ibuprofeno 600 mg — se dor | Tomar 01 comprimido por via oral, se dor, no mínimo a cada 8 horas, por 5 dias. Quantidade: 15 comprimidos. Tomar sempre após alimentação. | simples |  | [ibuprofeno](https://www.bulas.med.br/bula/ibuprofeno-comprimido-600-mg) |
+| Naproxeno 500 mg | Tomar 01 comprimido por via oral, a cada 12 horas, por 5 dias. Quantidade: 10 comprimidos. Tomar com alimento. | simples |  | [naprosyn](https://bula.com.br/original/naprosyn) |
+| Nimesulida 100 mg | Tomar 01 comprimido por via oral, a cada 12 horas, por 5 dias. Quantidade: 10 comprimidos. Tomar após alimentação. Não usar com bebida alcoólica. | simples | A EMA limita a 15 dias por risco hepático. | [nimesulida](https://www.ema.europa.eu/pt/documents/referral/nimesulide-article-31-referral-annex-ii_pt.pdf) |
+| Cetoprofeno 150 mg LP | Tomar 01 comprimido por via oral, a cada 12 horas, por 5 dias. Quantidade: 10 comprimidos. Tomar durante a refeição, com 1 copo de água. | simples | De 12 em 12 horas é a dose de ataque da bula e também o máximo (300 mg/dia). A nota anterior estava errada. | [biprofenid](https://cr-net-public-prod.s3.amazonaws.com/product_leaflet/CD6A18803E68B9843569AD63567DF111.pdf) |
+| Cetorolaco 10 mg (sublingual) | Usar 01 comprimido por via sublingual, a cada 8 horas, por 5 dias. Quantidade: 15 comprimidos. Deixar dissolver embaixo da língua. Não usar mais de 5 dias. Não usar com bebida alcoólica. | simples | Só existe o sublingual no catálogo. No máximo 5 dias. | [toragesic](https://static-webv8.jet.com.br/drogaosuper/bulas/7894916501415.pdf) |
+| Ácido mefenâmico 500 mg | Tomar 01 comprimido por via oral, a cada 8 horas, por 5 dias. Quantidade: 15 comprimidos. Tomar com alimento. | simples |  | [ponstan](https://www.pfizer.com.br/files/Ponstan_Profissional_de_Saude_21.pdf) |
+| Escopolamina 10 mg | Tomar 01 comprimido por via oral, se dor, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 3 dias. Quantidade: 12 comprimidos. Usar se cólica abdominal. Engolir inteiro, com água. | simples | 3 dias. "Se dor" na Posologia, a cólica na Recomendação. | [buscopan](https://www.bulas.med.br/bula/buscopan-profissional) |
+| Escopolamina + dipirona 10+250 mg | Tomar 02 comprimidos por via oral, se dor, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 3 dias. Quantidade: 24 comprimidos. Usar se cólica. Não passar de 8 comprimidos por dia. Não tomar junto com outra dipirona. | simples | 3 dias. 2 comprimidos de 6 em 6 horas já é a dose máxima: somar com outra dipirona passa do limite. | [buscopancomp](https://www.saudedireta.com.br/catinc/drugs/bulas/buscopancompostocomp.pdf) |
+| Diclofenaco gel 11,6 mg/g | Aplicar 01 aplicação por via dermatológica, 4 vezes ao dia, por 7 dias. Quantidade: 01 bisnaga de 60 g. Aplicar no local dolorido e massagear. Lavar as mãos depois. Não usar em pele ferida nem nos olhos. | simples | 7 dias. 60 g pode faltar para uma área grande. | [voltaflan](https://bula.com.br/voltaflan-gel) |
+
+## Corticoides
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Prednisona 20 mg | Tomar 02 comprimidos por via oral pela manhã, por 5 dias. Quantidade: 10 comprimidos. Tomar após o café da manhã. | simples | **Mudou:** "1 vez ao dia" → "pela manhã", como na bula. 40 mg por 5 dias sem desmame (GINA, GOLD). | [meticorten](https://www.organon.com/brazil/wp-content/uploads/sites/33/2023/06/meticorten_bula_profissional.pdf) |
+| Dexametasona 4 mg | Tomar 01 comprimido por via oral pela manhã, por 5 dias. Quantidade: 05 comprimidos. Tomar após o café da manhã. | simples | Faixa de dose da bula de referência não verificada. | [dexametasona](https://www.bulas.med.br/bula/dexametasona-comprimido-4-mg) |
+
+## Antibióticos
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Amoxicilina 500 mg — 7 dias (sinusite, dente) | Tomar 01 cápsula por via oral, a cada 8 horas, por 7 dias. Quantidade: 21 cápsulas. Completar todo o tratamento mesmo com melhora. Se manchas na pele, inchaço ou falta de ar, parar e procurar atendimento. | antimicrobiano | Não serve para pneumonia do adulto, que pede 1 g de 8 em 8 horas. | [amoxil](https://www.saudedireta.com.br/catinc/drugs/bulas/amoxil.pdf) |
+| Amoxicilina 500 mg — 10 dias (amigdalite) | Tomar 01 cápsula por via oral, a cada 8 horas, por 10 dias. Quantidade: 30 cápsulas. Completar todo o tratamento mesmo com melhora. Se manchas na pele, inchaço ou falta de ar, parar e procurar atendimento. | antimicrobiano | Faringite estreptocócica: 10 dias. | [amoxil](https://www.saudedireta.com.br/catinc/drugs/bulas/amoxil.pdf) |
+| Amoxicilina + clavulanato 500+125 mg | Tomar 01 comprimido por via oral, a cada 8 horas, por 7 dias. Quantidade: 21 comprimidos. Tomar no início da refeição, o que reduz náusea e diarreia. Completar todo o tratamento. | antimicrobiano |  | [clavulin](https://www.saudedireta.com.br/catinc/drugs/bulas/clavulin.pdf) |
+| Azitromicina 500 mg | Tomar 01 comprimido por via oral, 1 vez ao dia, por 3 dias. Quantidade: 03 comprimidos. Tomar sempre no mesmo horário, com ou sem alimento. | antimicrobiano | **Mudou:** 5 → 3 dias. A bula dá 1,5 g no total; 5 dias davam 2,5 g. | [zitromax](https://www.saudedireta.com.br/catinc/drugs/bulas/zitromax.pdf) |
+| Cefalexina 500 mg (celulite, erisipela) | Tomar 01 cápsula por via oral, a cada 6 horas, por 5 dias. Quantidade: 20 cápsulas. Completar todo o tratamento. Retornar se a vermelhidão aumentar ou se tiver febre. | antimicrobiano | **Mudou:** 7 → 5 dias (celulite, IDSA 2014), prolongando se não melhorar. | [keflex](https://www.saudedireta.com.br/catinc/drugs/bulas/keflex.pdf) |
+| Ciprofloxacino 500 mg (pielonefrite) | Tomar 01 comprimido por via oral, a cada 12 horas, por 7 dias. Quantidade: 14 comprimidos. Não tomar junto com leite, antiácido, cálcio ou ferro (2 horas antes ou 4 horas depois). Se doer o tendão, parar e procurar atendimento. | antimicrobiano | Reservar para pielonefrite; não usar em cistite simples. Recomendação nova da bula. | [cipro](https://www.saudedireta.com.br/catinc/drugs/bulas/cipro.pdf) |
+| Norfloxacino 400 mg (cistite) | Tomar 01 comprimido por via oral, a cada 12 horas, por 3 dias. Quantidade: 06 comprimidos. Tomar com um copo de água, 1 hora antes ou 2 horas depois de refeição ou leite. Antiácido, ferro ou zinco só 2 horas depois. | antimicrobiano | **Mudou:** 7 → 3 dias (cistite não complicada). | [floxacin](https://www.saudedireta.com.br/catinc/drugs/bulas/floxacin.pdf) |
+| Nitrofurantoína 100 mg (cistite) | Tomar 01 comprimido por via oral, a cada 6 horas, por 5 dias. Quantidade: 20 comprimidos. Tomar com alimento. A urina pode ficar amarelo-escura. Não serve se houver febre ou dor nas costas. | antimicrobiano | **Mudou:** 7 → 5 dias (IDSA, EAU); a bula diz 7 a 10. Contraindicada com depuração de creatinina baixa (corte de 40 ou 60 não verificado). | [macrodantina](https://www.saudedireta.com.br/catinc/drugs/bulas/macrodantina.pdf) |
+| Sulfametoxazol + trimetoprima 400+80 mg (cistite) | Tomar 02 comprimidos por via oral, a cada 12 horas, por 3 dias. Quantidade: 12 comprimidos. Tomar após refeição, com bastante água. Se manchas ou bolhas na pele, parar e procurar atendimento. | antimicrobiano | **Mudou:** 7 → 3 dias (cistite, se a resistência local for até 20%). | [bactrim](https://www.saudedireta.com.br/catinc/drugs/bulas/bactrim.pdf) |
+| Metronidazol 250 mg (vaginose, tricomoníase) | Tomar 02 comprimidos por via oral, a cada 12 horas, por 7 dias. Quantidade: 28 comprimidos. Não ingerir bebida alcoólica durante o uso e até 1 dia após. Evitar relações sexuais durante o tratamento. | antimicrobiano | **Mudou:** de 8 em 8 → de 12 em 12 horas, 28 comprimidos (PCDT IST). O álcool: a bula fala em 1 dia depois. | [flagyl](https://saude.sp.gov.br/resources/crt/assistencia/pcdt/pcdtists2022.pdf) |
+| Mupirocina 20 mg/g creme | Aplicar 01 aplicação por via dermatológica, 3 vezes ao dia, por 7 dias. Quantidade: 01 bisnaga de 15 g. Aplicar fina camada sobre a lesão limpa e seca. Não usar nos olhos. | antimicrobiano | O catálogo tem creme; a bula lida foi a da pomada. | [bactroban](https://www.saudedireta.com.br/catinc/drugs/bulas/bactroban.pdf) |
+
+## Antivirais, antifúngicos e antiparasitários
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Aciclovir 200 mg — herpes genital, 1º episódio | Tomar 01 comprimido por via oral, 5 vezes ao dia, por 7 dias. Quantidade: 35 comprimidos. De 4 em 4 horas durante o dia, sem a dose da madrugada. Beber bastante água. | simples | **Mudou o nome:** esta dose serve ao 1º episódio de herpes genital, e não ao zóster nem ao herpes labial. | [aciclovir](https://www.gov.br/conitec/pt-br/midias/infeccoes_sexualmente_transmissiveis.pdf/@@download/file/Infeccoes_sexualmente_transmissiveis.pdf) |
+| Aciclovir 200 mg — herpes-zóster | Tomar 04 comprimidos por via oral, 5 vezes ao dia, por 7 dias. Quantidade: 140 comprimidos. De 4 em 4 horas durante o dia, sem a dose da madrugada. Beber bastante água. | simples | **Novo.** 800 mg 5 vezes ao dia por 7 dias, com o comprimido de 200 mg da rede (o de 400 mg está fora dela). | [aciclovir](https://www.gov.br/conitec/pt-br/midias/infeccoes_sexualmente_transmissiveis.pdf/@@download/file/Infeccoes_sexualmente_transmissiveis.pdf) |
+| Fluconazol 150 mg | Tomar 01 cápsula por via oral, dose única. Quantidade: 01 cápsula. Não usar na gravidez. | simples |  | [zoltec](https://eurofarma.com.br/produtos/bulas/healthcare/pt/bula-fluconazol.pdf) |
+| Miconazol creme 2% | Aplicar 01 aplicação por via dermatológica, 2 vezes ao dia, por 4 semanas. Quantidade: 01 bisnaga de 28 g. Aplicar fina camada na lesão limpa e seca. Manter 1 semana após sumirem as lesões. | simples | **Mudou:** 2 → 4 semanas: até sumirem as lesões e mais 1 semana. | [miconazol](https://bula.com.br/original/nitrato-de-miconazol-creme-dermatologico) |
+| Miconazol creme vaginal 2% | Aplicar 01 aplicação por via vaginal à noite, por 14 dias. Quantidade: 01 bisnaga de 80 g. Um aplicador ao deitar, também na menstruação. O creme danifica camisinha e diafragma. | simples | **Mudou:** 7 → 14 dias, como na bula. A bisnaga de 80 g tem 14 aplicadores. | [miconazolvag](https://www.bulas.med.br/bula/nitrato-de-miconazol-creme-vaginal-20-mg-g) |
+| Ivermectina 6 mg (51 a 65 kg) | Tomar 02 comprimidos por via oral, dose única. Quantidade: 02 comprimidos. Dose de 200 mcg/kg para 51 a 65 kg: ajustar ao peso. Em jejum, com água. Na sarna, repetir a dose após 7 a 14 dias. | simples | **Mudou:** 3 → 2 comprimidos. A dose é por peso: 3 comprimidos só servem para 80 a 90 kg. | [revectina](https://dam.abbott.com/pt-br/documents/pdfs/nossas-bulas/r/BU-17-revectina-bula-profissional-final.pdf) |
+| Albendazol 400 mg — dose única | Tomar 01 comprimido por via oral, dose única. Quantidade: 01 comprimido. Não usar na gravidez. | simples | **Novo.** Ascaridíase, ancilostomíase, tricuríase, enterobíase. | [zentel](https://br.gsk.com/media/3lknrr54/zentel-comprimido.pdf) |
+| Albendazol 400 mg — 3 dias (estrongiloidíase, teníase) | Tomar 01 comprimido por via oral, 1 vez ao dia, por 3 dias. Quantidade: 03 comprimidos. Não usar na gravidez. | simples | A bula não pede alimento gorduroso para verme intestinal. | [zentel](https://br.gsk.com/media/3lknrr54/zentel-comprimido.pdf) |
+
+## Alergia e pele
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Loratadina 10 mg | Tomar 01 comprimido por via oral, 1 vez ao dia, por 7 dias. Quantidade: 07 comprimidos. | simples | 7 dias. | [loratadina](https://bula.com.br/lergitec) |
+| Bilastina 20 mg | Tomar 01 comprimido por via oral, 1 vez ao dia, por 5 dias. Quantidade: 05 comprimidos. Tomar em jejum: 1 hora antes ou 2 horas após comida ou suco de fruta. | simples |  | [bilastina](https://eurofarma.com.br/produtos/bulas/patient/pt/bula-bilastina.pdf) |
+| Dexclorfeniramina 2 mg | Tomar 01 comprimido por via oral, a cada 6 horas, por 5 dias. Quantidade: 20 comprimidos. Causa sonolência: não dirigir nem tomar bebida alcoólica. | simples | 5 dias. Evitar no idoso. | [dexclorfeniramina](https://www.drogaraia.com.br/bulas/maleato-de-dexclorfeniramina-ems-2mg) |
+| Hidrocortisona creme 1% | Aplicar 01 aplicação por via dermatológica, 2 vezes ao dia, por 7 dias. Quantidade: 01 bisnaga de 15 g. Aplicar fina camada. | simples |  | [hidrocortisona](https://bula.com.br/original/acetato-de-hidrocortisona-creme-10-mgg) |
+| Dexametasona creme 0,1% | Aplicar 01 aplicação por via dermatológica, 2 vezes ao dia, por 7 dias. Quantidade: 01 bisnaga de 10 g. Aplicar fina camada. Não usar em micose ou herpes. Evitar face e uso prolongado. | simples | O catálogo tem o creme de 0,1% (1 mg/g), e não a pomada. | [dexametasonacreme](https://www.bulas.med.br/p/bulas-de-medicamentos/bula/7564/dexametonal.htm) |
+| Óxido de zinco + vitaminas A e D (fralda, incontinência) | Aplicar 01 aplicação por via dermatológica, 4 vezes ao dia, por 7 dias. Quantidade: 01 bisnaga de 45 g. Camada generosa após limpar e secar a pele, a cada troca de fralda. | simples | Para adulto, só como barreira na dermatite de fralda ou incontinência. | [hipoglos](https://bula.com.br/original/hipoglos) |
+
+## Respiratório
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Salbutamol 100 mcg spray | Inalar 02 jatos por via inalatória, se falta de ar, no mínimo a cada 4 horas, no máximo 4 vezes ao dia, por 7 dias. Quantidade: 01 frasco de 200 doses. Com espaçador, um jato por vez. Se precisar de mais de 4 vezes ao dia ou não melhorar, procurar atendimento. | simples | **Mudou:** 6 → 2 jatos, no máximo 4 vezes ao dia, como na bula. Pela GINA, na alta da crise de asma vai junto o corticoide inalatório ou oral. | [aerolin](https://br.gsk.com/media/5wtj4ekh/aerolin-spray.pdf) |
+| Budesonida nasal 32 mcg | Aplicar 04 jatos por via nasal, a cada 12 horas, por 30 dias. Quantidade: 02 frascos de 120 doses. Dividir: 2 jatos em cada narina. Assoar o nariz antes; direcionar o jato para a parede lateral, para fora, nunca para o septo, e não inspirar com força. | simples | 30 dias. 4 jatos de 12 em 12 horas é a dose máxima (256 mcg/dia). | [budecort](https://www.bulas.med.br/p/detalhamento-das-bulas/1160134/posologia-e-modo-de-usar-budecort-aqua.htm) |
+| Mometasona nasal 50 mcg | Aplicar 04 jatos por via nasal pela manhã, por 30 dias. Quantidade: 01 frasco de 120 doses. Dividir: 2 jatos em cada narina. Assoar o nariz antes; direcionar o jato para a parede lateral, para fora, nunca para o septo, e não inspirar com força. | simples | 30 dias. | [nasonex](https://www.drogasil.com.br/bulas/nasonex) |
+| Levodropropizina xarope 6 mg/ml | Tomar 10 ml por via oral, 3 vezes ao dia, por 7 dias. Quantidade: 02 frascos de 120 ml. | simples |  | [zyplo](https://www.bulas.med.br/p/detalhamento-das-bulas/1152909/posologia-zyplo.htm) |
+| Acetilcisteína 600 mg efervescente | Tomar 01 comprimido por via oral à noite, por 7 dias. Quantidade: 07 comprimidos. Dissolver em meio copo de água e tomar em seguida. | simples | **Mudou:** pela manhã → à noite, como na bula. | [fluimucil](https://drconsulta.com/conteudo/fluimucil-comprimido-bula/) |
+
+## Estômago e intestino
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Omeprazol 20 mg | Tomar 01 cápsula por via oral pela manhã, por 14 dias. Quantidade: 14 cápsulas. Em jejum, trinta minutos antes do café da manhã. | simples |  | [losec](https://bula.com.br/losec-mups/posologia-como-usar) |
+| Metoclopramida 10 mg | Tomar 01 comprimido por via oral, se náuseas ou vômitos, no mínimo a cada 8 horas, por 3 dias. Quantidade: 09 comprimidos. Tomar 30 minutos antes das refeições. Pode dar sono. Se tiver tremor, rigidez ou movimentos involuntários, parar e procurar atendimento. | simples | 3 dias. A EMA limita a 30 mg/dia e 5 dias. Recomendação nova. | [plasil](https://www.ema.europa.eu/en/news/european-medicines-agency-recommends-changes-use-metoclopramide) |
+| Bromoprida 10 mg | Tomar 01 comprimido por via oral, se náuseas ou vômitos, no mínimo a cada 8 horas, por 3 dias. Quantidade: 09 comprimidos. Tomar 30 minutos antes das refeições. Pode dar sono. Se tiver tremor, rigidez ou movimentos involuntários, parar e procurar atendimento. | simples | 3 dias. Recomendação nova. | [digesan](https://eurofarma.com.br/produtos/bulas/healthcare/pt/bula-digesan.pdf) |
+| Domperidona 10 mg | Tomar 01 comprimido por via oral, se náuseas ou vômitos, no mínimo a cada 8 horas, no máximo 3 vezes ao dia, por 7 dias. Quantidade: 21 comprimidos. Tomar 15 a 30 minutos antes das refeições. Não usar se tiver doença do coração ou arritmia. | simples | A EMA limita a 30 mg/dia e 1 semana, por risco de arritmia. | [motilium](https://innovativemedicine.jnj.com/brasil/download/motilium-comprimidos-pub-vp.pdf) |
+| Ondansetrona 8 mg | Tomar 01 comprimido por via oral, se náuseas ou vômitos, no mínimo a cada 8 horas, no máximo 3 vezes ao dia, por 3 dias. Quantidade: 09 comprimidos. Pode causar prisão de ventre e dor de cabeça. | simples | **Mudou:** máximo de 3 vezes ao dia. Na gastroenterite do adulto é uso fora da bula. A de 4 mg é da rede. | [ondansetrona](https://saude.sp.gov.br/resources/ses/perfil/gestor/assistencia-farmaceutica/medicamentos-das-unidades-farmacia-dose-certa/ondansetrona_v1.pdf) |
+| Simeticona 75 mg/ml gotas | Tomar 13 gotas por via oral, 3 vezes ao dia, por 5 dias. Quantidade: 01 frasco de 10 ml. | simples | **Mudou:** 20 gotas 4 vezes → 13 gotas 3 vezes ao dia, como na bula. 1 frasco basta. | [luftal](https://www.bms.com/assets/bms/brazil/documents/LUFTAL_SOL_ORAL_VP4_Rev0515.pdf) |
+| Racecadotrila 100 mg | Tomar 01 comprimido por via oral, a cada 8 horas, por 7 dias. Quantidade: 21 comprimidos. Tomar antes das refeições. Parar após 2 evacuações normais. Manter o soro de reidratação oral. Se inchar lábios ou rosto, parar e procurar atendimento. | simples | O catálogo tem comprimido, e não cápsula. No máximo 7 dias. | [tiorfan](https://cima.aemps.es/cima/dochtml/ft/63286/FT_63286.html) |
+| Saccharomyces boulardii 200 mg | Tomar 01 cápsula por via oral, 2 vezes ao dia, por 3 dias. Quantidade: 06 cápsulas. Pode ser dissolvido em líquido ou alimento morno ou frio. | simples | Não receitar com cateter venoso central ou imunossupressão (risco de fungemia). | [floratil](https://drconsulta.com/conteudo/floratil-capsula-bula/) |
+| Policresuleno + cinchocaína pomada | Aplicar 01 aplicação por via retal, 3 vezes ao dia, por 7 dias. Quantidade: 01 bisnaga de 30 g. Aplicar após a higiene local e sempre após evacuar. Associar dieta rica em fibras, aumento de água e banho de assento morno por dez a quinze minutos, duas a três vezes ao dia. Não usar de forma prolongada. | simples |  | [proctyl](https://assets-dam.takeda.com/image/upload/v1742391932/LOC/pt-br/Products/Proctyl/Proctyl_profissional.pdf) |
+| Diosmina + hesperidina 900+100 mg | Tomar 01 comprimido por via oral, 3 vezes ao dia, por 4 dias; depois 01 comprimido, 2 vezes ao dia, por 3 dias. Quantidade: 18 comprimidos. Tomar durante as refeições. | simples | Esquema da crise hemorroidária da bula. | [daflon](https://www.araujo.com.br/bula/Daflon-1000mg-com-60-Comprimidos) |
+
+## Urina
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Fenazopiridina 200 mg | Tomar 01 drágea por via oral, a cada 8 horas, por 2 dias. Quantidade: 06 drágeas. Tomar após as refeições. A urina fica alaranjada e pode manchar lentes de contato. Usar junto com o antibiótico. | simples | No máximo 2 dias com o antibiótico. | [fenazopiridina](https://cr-net-public-prod.s3.amazonaws.com/product_leaflet/3C8A959632AF61111EAD8032F3E7E700.pdf) |
+
+## Neurologia, tontura e músculo
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Ciclobenzaprina 10 mg | Tomar 01 comprimido por via oral à noite, por 5 dias. Quantidade: 05 comprimidos. Causa sonolência: não dirigir nem tomar bebida alcoólica. | simples | 5 dias. A Recomendação "se dor" saiu: contradizia o uso fixo à noite. | [miosan](https://www.saudedireta.com.br/catinc/drugs/bulas/miosan.pdf) |
+| Dimenidrinato + piridoxina 50+10 mg | Tomar 01 comprimido por via oral, se náuseas ou vômitos, no mínimo a cada 6 horas, no máximo 4 vezes ao dia, por 3 dias. Quantidade: 12 comprimidos. Também se tontura. Causa sonolência: não dirigir nem tomar bebida alcoólica. | simples | 3 dias: o supressor vestibular por mais tempo atrasa a compensação. Máximo de 4 vezes ao dia. | [dramin](https://consultaremedios.com.br/dramin-b6/bula) |
+
+## Olho e ouvido
+
+| Padrão | Na Receita | Receituário | Nota | Fonte |
+|---|---|---|---|---|
+| Tobramicina colírio 0,3% | Pingar 01 gota por via oftálmica, a cada 6 horas, por 7 dias. Quantidade: 01 frasco de 5 ml. No olho afetado. Lavar as mãos antes; não encostar o bico do frasco no olho ou nos cílios. Não usar lentes de contato durante o tratamento. Descartar o frasco ao fim do tratamento. | antimicrobiano | **Mudou, a seu pedido:** 1 gota de 6 em 6 horas por 7 dias. 1 frasco. | [tobrex](https://consultaremedios.com.br/tobrex/bula) |
+| Carmelose 5 mg/ml colírio | Pingar 01 gota por via oftálmica, 4 vezes ao dia, por 30 dias. Quantidade: 01 frasco de 10 ml. Em cada olho, e também sempre que houver desconforto, ardência ou sensação de areia. Aguardar cinco minutos entre este e outros colírios. | simples | 30 dias. Fora da rede. | [freshtears](https://www.bulas.med.br/p/bulas-de-medicamentos/bula/1341053/fresh-tears.htm) |
+| Ciprofloxacino + hidrocortisona otológico | Pingar 03 gotas por via otológica, a cada 12 horas, por 7 dias. Quantidade: 01 frasco de 5 ml. Agitar bem antes de usar. No ouvido afetado. Deitar de lado com o ouvido para cima e permanecer assim por um a dois minutos. Manter o ouvido seco. | antimicrobiano | É o Otociriax. Contraindicado com tímpano perfurado. | [otociriax](https://consultaremedios.com.br/otociriax/bula) |
+| Hidroxiquinolina + trolamina otológico | Pingar 05 gotas por via otológica, 3 vezes ao dia, por 5 dias. Quantidade: 01 frasco de 8 ml. Para amolecer a cera antes da lavagem. Deitar de lado, ouvido para cima, por 5 minutos; depois tampar com algodão. Não usar se houver dor, secreção ou tímpano perfurado. | simples | **Mudou:** 7 → 5 dias (a bula não dá duração). É o Cerumin; as 5 gotas são da bula, apesar do alerta do motor. | [cerumin](https://www.pro.novartis.com/br-pt/sites/pro_novartis_com_br/files/2026-01/Bula-CERUMIN-Solucao-Otologica-Medico.pdf) |
+
+## Não entram ainda
+
+| Do arquivo antigo | Por quê |
+|---|---|
+| Benzidamina 3 mg pastilha | Não está no catálogo. |
+| Naratriptano 2,5 mg | Não está no catálogo. |
+| Levofloxacino 750 mg | O catálogo só tem 250 mg e 500 mg. |
+| Fosfomicina 3 g, Acetilcisteína 600 mg envelope, Sais para reidratação oral | O catálogo entrega em "envelope", e o motor só conhece a Dose em sachê. |
+| Rifamicina (Rifocina) spray, Cetoconazol xampu 2%, Permetrina 5% loção, Soro fisiológico 0,9% 250 ml | A forma (solução tópica, xampu, loção, solução) não está na tabela de Unidades de dose do motor. |
+| Beclometasona 250 mcg/dose | O catálogo grava a forma como "Solução oral", e o motor pede a Dose em ml. |
+
+## Tirados
+
+| Do arquivo antigo | Por quê |
+|---|---|
+| Betaistina 24 mg | Só se justifica na suspeita de Ménière, com benefício incerto (BEMED, BMJ 2016); não serve para a vertigem aguda. Tirado em 26/11/2026. |
+| Flunarizina 10 mg | Profilática e de efeito lento: não serve para a vertigem aguda do pronto-atendimento. Tirado em 26/11/2026. |
