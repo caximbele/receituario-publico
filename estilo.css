@@ -110,6 +110,9 @@ textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1
 .itens-da-lista .acoes { margin-top: .25rem; }
 .itens-da-lista .botao { padding: .1rem .6rem; font-size: .85rem; }
 .em-edicao { background: #fef9c3; }
+/* A caixa "imprimir" de cada item, na linha dos botões. O item desmarcado diz "(fora desta impressão)", e não só muda de cor. */
+.itens-da-lista label { display: inline; margin: 0 .75rem 0 0; font-weight: 400; }
+.fora-da-impressao .frase { color: #475569; }
 .vazio { margin: .5rem 0 0; color: #475569; }
 
 /* A folha, a mesma na tela (prévia) e no papel: A4 retrato com uma Via, ou A4 paisagem com as 2 Vias lado a lado em

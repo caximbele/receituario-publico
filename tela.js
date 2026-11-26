@@ -77,8 +77,24 @@ let tentou = false;
 const naoReconhecidas = [];
 // O último texto copiado: o "Copiado" sai quando o Texto para colar da lista deixa de ser ele.
 let copiado = null;
+// Os itens desmarcados na lista: ficam fora da prévia, do impresso e do Texto para colar, para a Receita sair em partes.
+const foraDaImpressao = new WeakSet();
 
 const montar = (lista) => montarReceita({ ...atendimento(), itens: lista, emissao: hoje(), catalogo, configuracao });
+
+// A Montagem só dos itens marcados para sair, com as posições de volta às da lista inteira, para os bloqueios e os
+// avisos falarem do "item 3" que a lista mostra. Cada Receita numera os seus itens a partir de 1, como sempre.
+function montarOQueSai() {
+  const posicoes = itens.flatMap((item, i) => (foraDaImpressao.has(item) ? [] : [i]));
+  const resultado = montar(posicoes.map((i) => itens[i]));
+  const naLista = (x) => ({ ...x, itens: x.itens.map((i) => posicoes[i]) });
+  return {
+    ...resultado,
+    alertas: resultado.alertas.map(naLista),
+    bloqueios: resultado.bloqueios.map(naLista),
+    receitas: resultado.receitas.map((r) => ({ ...r, itens: r.itens.map((i) => ({ ...i, item: posicoes[i.item] })) })),
+  };
+}
 
 // Os parâmetros de cada tipo de Posologia: o nome na Montagem → o id do campo. Cada tipo tem os seus campos, escondidos
 // quando o tipo é outro, e por isso o Tab só passa pelos campos do tipo escolhido. A fracionada é a Posologia por Turno
@@ -264,15 +280,25 @@ function mostrarMensagens(item, gerais, bloqueios) {
 function mostrarLista({ itens: montados, alertas, bloqueios }) {
   $('itens').replaceChildren(...montados.map((item, i) => {
     const doItem = (lista) => lista.filter((x) => x.itens.includes(i));
+    const sai = !foraDaImpressao.has(itens[i]);
     const li = document.createElement('li');
-    if (i === editando) li.className = 'em-edicao';
+    li.classList.toggle('em-edicao', i === editando);
+    li.classList.toggle('fora-da-impressao', !sai);
     li.append(
-      paragrafo('frase', `${item.frase ?? 'Item incompleto: use editar para corrigi-lo.'}${i === editando ? ' (em edição no formulário)' : ''}`),
+      paragrafo('frase', `${item.frase ?? 'Item incompleto: use editar para corrigi-lo.'}${i === editando ? ' (em edição no formulário)' : ''}${sai ? '' : ' (fora desta impressão)'}`),
       ...item.erros.map((e) => paragrafo('erro', `Erro: ${e.mensagem}`)),
       ...[...item.alertas, ...doItem(alertas)].map((a) => paragrafo('alerta', `Alerta: ${a.mensagem}`)),
       ...doItem(bloqueios).map((b) => paragrafo('erro', `Bloqueio: ${b.mensagem}`)),
     );
-    li.append(acoes(i, ['editar', `Editar o item ${i + 1}`], ['tirar', `Tirar o item ${i + 1}`]));
+    // A caixa que põe o item nesta impressão, ou o deixa para outra.
+    const caixa = Object.assign(document.createElement('input'), { type: 'checkbox', checked: sai });
+    caixa.dataset.posicao = String(i);
+    caixa.setAttribute('aria-label', `Imprimir o item ${i + 1}`);
+    const rotulo = document.createElement('label');
+    rotulo.append(caixa, 'imprimir');
+    const botoes = acoes(i, ['editar', `Editar o item ${i + 1}`], ['tirar', `Tirar o item ${i + 1}`]);
+    botoes.prepend(rotulo, ' ');
+    li.append(botoes);
     return li;
   }));
   $('sem-itens').hidden = montados.length > 0;
@@ -280,16 +306,22 @@ function mostrarLista({ itens: montados, alertas, bloqueios }) {
 
 // Por que Imprimir e Copiar texto estão desligados, ou '' quando não estão. Com um bloqueio, não há impresso nem texto.
 function desligados({ receitas, bloqueios }) {
-  if (bloqueios.length) return 'Imprimir e Copiar texto ficam desligados enquanto houver bloqueio.';
-  return receitas.length ? '' : 'Imprimir e Copiar texto ficam desligados: não há item na lista.';
+  if (bloqueios.length) return 'Imprimir e Copiar texto ficam desligados enquanto houver bloqueio num item marcado para imprimir.';
+  if (receitas.length) return '';
+  return itens.length && itens.every((item) => foraDaImpressao.has(item))
+    ? 'Imprimir e Copiar texto ficam desligados: nenhum item está marcado para imprimir.'
+    : 'Imprimir e Copiar texto ficam desligados: não há item na lista.';
 }
 
-// A barra: as Receitas que vão sair, os alertas e os bloqueios da lista inteira e das Receitas, e os botões.
+// A barra: as Receitas que vão sair, com os itens marcados, os alertas da lista inteira, os bloqueios dos itens
+// marcados, e os botões.
 function mostrarBarra(resultado) {
   const { receitas, alertas, bloqueios } = resultado;
-  $('receitas-que-saem').textContent = receitas.length
+  const saem = receitas.length
     ? `Saem: ${receitas.map((r) => `${r.tipo}, ${contagem(r.itens.length, 'item', 'itens')}`).join(' · ')}.`
     : 'Nenhuma Receita sai.';
+  const ficam = itens.flatMap((item, i) => (foraDaImpressao.has(item) ? [i] : []));
+  $('receitas-que-saem').textContent = ficam.length ? `${saem} Fora desta impressão: ${nomeDosItens(ficam)}.` : saem;
   $('avisos-da-barra').replaceChildren(
     ...alertas.map((a) => paragrafo('alerta', `Alerta: ${a.mensagem}`)),
     ...bloqueios.map((b) => paragrafo('erro', textoDoBloqueio(b))),
@@ -337,9 +369,10 @@ function atualizar() {
   $('titulo-item').textContent = editando === null ? 'Novo item' : `Editando o item ${editando + 1}`;
   $('salvar').textContent = editando === null ? 'Adicionar (Enter)' : 'Gravar (Enter)';
   $('limpar').textContent = editando === null ? 'Limpar (Esc)' : 'Cancelar (Esc)';
+  // A lista mostra todos os itens, e o princípio ativo repetido conta também o item desmarcado. A barra é do que sai.
   const resultado = montar(itens);
   mostrarLista(resultado);
-  mostrarBarra(resultado);
+  mostrarBarra({ ...montarOQueSai(), alertas: resultado.alertas });
 }
 
 // Limpa o formulário para um item novo; na edição, o item da lista fica como estava. O cursor volta ao Medicamento.
@@ -367,7 +400,11 @@ function salvar() {
     return;
   }
   if (editando === null) itens.push(entrada);
-  else itens[editando] = entrada;
+  else {
+    // O item editado continua fora da impressão, se estava.
+    if (foraDaImpressao.delete(itens[editando])) foraDaImpressao.add(entrada);
+    itens[editando] = entrada;
+  }
   limpar();
 }
 
@@ -567,6 +604,15 @@ $('itens').addEventListener('click', ({ target }) => {
   if (botao?.dataset.acao === 'editar') editar(Number(botao.dataset.posicao));
   if (botao?.dataset.acao === 'tirar') tirar(Number(botao.dataset.posicao));
 });
+// A caixa "imprimir" de um item. A lista é redesenhada, e o foco volta à caixa.
+$('itens').addEventListener('change', ({ target }) => {
+  if (target.type !== 'checkbox') return;
+  const { posicao } = target.dataset;
+  if (target.checked) foraDaImpressao.delete(itens[posicao]);
+  else foraDaImpressao.add(itens[posicao]);
+  atualizar();
+  $('itens').querySelector(`input[data-posicao="${posicao}"]`).focus();
+});
 $('paciente-ficticio').addEventListener('change', () => {
   mostrarTopo();
   atualizar();
@@ -603,7 +649,7 @@ $('nao-reconhecidas').addEventListener('click', ({ target }) => {
 });
 
 $('ver-previa').addEventListener('click', () => {
-  const resultado = montar(itens);
+  const resultado = montarOQueSai();
   const { folhas, avisos } = folhasDoImpresso(resultado.receitas, viasPorFolha());
   $('avisos-previa').replaceChildren(
     ...resultado.bloqueios.map((b) => paragrafo('erro', textoDoBloqueio(b))),
@@ -616,11 +662,11 @@ $('fechar-previa').addEventListener('click', () => $('previa').close());
 $('imprimir').addEventListener('click', () => window.print());
 // O papel leva as folhas da prévia, postas antes de imprimir, também no Ctrl+P. Com um bloqueio, não leva nenhuma.
 window.addEventListener('beforeprint', () => {
-  const resultado = montar(itens);
+  const resultado = montarOQueSai();
   $('impressao').replaceChildren(...(desligados(resultado) ? [] : folhasDoImpresso(resultado.receitas, viasPorFolha()).folhas));
 });
 $('copiar').addEventListener('click', async () => {
-  const texto = textoParaColar(montar(itens));
+  const texto = textoParaColar(montarOQueSai());
   try {
     await navigator.clipboard.writeText(texto);
     copiado = texto;
