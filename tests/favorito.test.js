@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { favorito } from '../favorito.js';
 
-async function rodar(pathname) {
+async function rodar(pathname, nomeNoIsaude = 'Fulano de Tal') {
   const alertas = [];
   let abriu = false;
   const globais = {
@@ -28,7 +28,7 @@ async function rodar(pathname) {
   const antes = Object.fromEntries(Object.keys(globais).map((k) => [k, globalThis[k]]));
   Object.assign(globalThis, globais);
   try {
-    await favorito({ endereco: 'http://localhost:8123/index.html', nomeNoIsaude: 'Fulano de Tal', prescritor: {}, unidades: [{ nomeNoIsaude: 'UBS Centro', unidade: {} }] });
+    await favorito({ endereco: 'http://localhost:8123/index.html', nomeNoIsaude, prescritor: {}, unidades: [{ nomeNoIsaude: 'UBS Centro', unidade: {} }] });
   } finally {
     Object.assign(globalThis, antes);
   }
@@ -51,4 +51,15 @@ test('recusa a lista das renovações', async () => {
   const { alertas, abriu } = await rodar('/saude/prescription_renewals');
   assert.equal(abriu, false);
   assert.match(alertas[0], /^Abra o favorito na tela/);
+});
+
+// O Prescritor pode copiar o nome como o topo mostra: "{número} - {NOME} - {especialidade}".
+test('aceita o nome do Prescritor copiado do topo', async () => {
+  assert.deepEqual(await rodar('/saude/prescription_renewals/546', '5476 - FULANO DE TAL - CLINICA MÉDICA'), { alertas: [], abriu: true });
+});
+
+test('recusa outro profissional', async () => {
+  for (const nome of ['Beltrano', '5476 - BELTRANO - CLINICA MÉDICA', 'Fulano']) {
+    assert.deepEqual(await rodar('/saude/prescription_renewals/546', nome), { alertas: ['Este favorito é de outro profissional.'], abriu: false });
+  }
 });

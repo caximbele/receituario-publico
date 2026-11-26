@@ -15,9 +15,9 @@ export async function favorito(config) {
   const renovacao = /^\/saude\/prescription_renewals\/(\d+)(?:\/edit)?$/.exec(location.pathname);
   if (location.origin !== ISAUDE || !(soap || upa || renovacao)) return alert('Abra o favorito na tela de um atendimento ou de uma renovação de receita.');
 
-  // Um nome logado vazio nunca bate.
+  // Um nome logado vazio nunca bate. O nome pode vir copiado do topo, "{número} - {NOME} - {especialidade}": vale um pedaço.
   const usuario = normalizar(window.appContext?.user?.name);
-  if (!usuario || usuario !== normalizar(config.nomeNoIsaude)) return alert('Este favorito é de outro profissional.');
+  if (!usuario || !normalizar(config.nomeNoIsaude).split(' - ').includes(usuario)) return alert('Este favorito é de outro profissional.');
   // A unidade é o Estabelecimento do topo, "{Estabelecimento} - {Setor}" (ADR 0012): o nome inteiro antes do " -", para
   // "UBS CENTRO" não valer em "UBS CENTRO II", e o Setor pode vir vazio. Com dois nomes que servem, vale o mais longo.
   const topo = normalizar(document.getElementById('modal_edit_user_setting')?.textContent);
