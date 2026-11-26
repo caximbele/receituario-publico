@@ -133,7 +133,8 @@ textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1
 .via footer { flex: 1; display: flex; flex-direction: column; }
 .cabecalho { text-align: center; }
 .cabecalho .institucional { font-weight: 700; text-transform: uppercase; }
-.via .titulo { margin: 1.5mm 0; text-align: center; font-size: 10.5pt; text-transform: uppercase; }
+/* O título que não cabe numa linha, na meia folha, divide-se em duas de tamanho parecido, sem palavra sozinha na 2ª. */
+.via .titulo { margin: 1.5mm 0; text-align: center; font-size: 10.5pt; text-transform: uppercase; text-wrap: balance; }
 .paciente { padding: 1mm 0; border-top: 1px solid #000; border-bottom: 1px solid #000; }
 .itens { list-style: none; margin: 1.5mm 0 0; padding: 0; }
 .item { break-inside: avoid; margin-bottom: 1.5mm; }

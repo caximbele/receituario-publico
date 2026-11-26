@@ -126,7 +126,7 @@ export function folhasDoImpresso(receitas, viasPorFolha) {
     if (viasPorFolha === 2 && blocos.length === 2) {
       const ladoALado = blocos.map((bloco) => blocoNaFolha(bloco, [0, total], true));
       if (cabemNaFolha(ladoALado)) return [folha(ladoALado)];
-      avisos.push(`Alerta (${receita.tipo}, ${nomeDosItens(receita.itens.map((i) => i.item))}): Itens demais para 2 Vias por folha: esta Receita sai com 1 Via por folha.`);
+      avisos.push(`Alerta (${receita.tipo}, ${nomeDosItens(receita.itens.map((i) => i.item))}): Itens demais para 2 Vias por folha: este Receituário sai com 1 Via por folha.`);
     }
     // Cada Via continua nas folhas seguintes, sem partir um item, contadas por Via.
     return blocos.flatMap((bloco) => {

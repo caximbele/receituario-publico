@@ -63,7 +63,7 @@
         </div>
         <!-- Fora do catálogo, o Prescritor escolhe o Tipo de receita, que o catálogo não sabe. -->
         <div class="campo" id="bloco-tipo-de-receita" hidden>
-          <label for="tipoDeReceita">Tipo de receita</label>
+          <label for="tipoDeReceita">Tipo de receituário</label>
           <select id="tipoDeReceita" aria-describedby="msgs-tipoDeReceita"></select>
           <div class="msgs" id="msgs-tipoDeReceita"></div>
         </div>
@@ -205,7 +205,7 @@
         <div class="campo" id="bloco-periodo" hidden>
           <label for="periodoDispensacao">Período de dispensação, em dias</label>
           <input id="periodoDispensacao" inputmode="numeric" aria-describedby="ajuda-periodo msgs-periodoDispensacao">
-          <p class="ajuda" id="ajuda-periodo">Em branco, vale o padrão do Tipo de receita.</p>
+          <p class="ajuda" id="ajuda-periodo">Em branco, vale o padrão do Tipo de receituário.</p>
           <div class="msgs" id="msgs-periodoDispensacao"></div>
         </div>
       </div>
@@ -300,7 +300,7 @@
   </main>
 
   <!-- A barra fixa: as Receitas que vão sair, os alertas e os bloqueios, e os botões. -->
-  <footer class="barra tela" id="barra" aria-label="Resumo das Receitas" hidden>
+  <footer class="barra tela" id="barra" aria-label="Resumo dos Receituários" hidden>
     <div class="linha">
       <p id="receitas-que-saem"></p>
       <div class="vias">

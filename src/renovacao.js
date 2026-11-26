@@ -9,6 +9,10 @@ import { nomeDoProduto, VIAS_DE_ADMINISTRACAO } from './produto.js';
 import { buscarProdutos } from './busca.js';
 import { plural } from './texto.js';
 
+// O Tipo de receita de cada título do Texto para colar. Até 26/11/2026 os títulos diziam "Receita" no lugar de
+// "Receituário" ("Receita simples", "Receita de Controle Especial"): os textos já colados no iSaúde continuam voltando.
+const TIPO_DO_TITULO = new Map(NOMES_DOS_TIPOS_DE_RECEITA.flatMap((tipo) => [[tipo, tipo], [tipo.replace(/^Receituário/, 'Receita'), tipo]]));
+
 const VERBOS = '(?:Tomar|Aplicar|Inalar|Pingar|Introduzir|Usar)';
 // O verbo não é lido, porque a Montagem o escreve de novo. Depois da Quantidade, só o conteúdo da Unidade de fornecimento
 // (" de 1.000 ml", com o ponto do milhar) e o "para cada 30 dias" do Uso contínuo; o resto são as recomendações.
@@ -181,7 +185,7 @@ function reconhecer(frase, justificativa, titulo, entrada, produtosPorNome) {
     ?? (usoContinuo && justificativa ? primeira.map(comPeriodo).find(Boolean) : null)
     ?? [];
   if (item) return { item };
-  return { motivo: deOutroTipo ? 'mudou de Tipo de receita' : outraJustificativa ? 'justificativa diferente' : falha };
+  return { motivo: deOutroTipo ? 'mudou de Tipo de receituário' : outraJustificativa ? 'justificativa diferente' : falha };
 }
 
 // O texto colado, linha a linha: { itens, naoReconhecidas }. Só contam as linhas de item ("n. …"), cada uma sob o último
@@ -199,8 +203,9 @@ export function renovar(texto, entrada) {
   let titulo = null;
   const linhas = texto.split('\n').map((l) => l.trim());
   for (const [i, linha] of linhas.entries()) {
-    if (NOMES_DOS_TIPOS_DE_RECEITA.includes(linha)) {
-      titulo = linha;
+    const tipoDoTitulo = TIPO_DO_TITULO.get(linha);
+    if (tipoDoTitulo) {
+      titulo = tipoDoTitulo;
       continue;
     }
     // Um editor pode trocar o espaço depois do número por tab ou por mais de um espaço.
@@ -208,7 +213,7 @@ export function renovar(texto, entrada) {
     if (!frase) continue;
     // A justificativa só vale na linha logo depois do item, e entra na prova dele.
     const justificativa = linhas[i + 1]?.match(/^Justificativa: (.+)$/)?.[1];
-    const lida = titulo ? reconhecer(frase, justificativa, titulo, entrada, produtosPorNome) : { motivo: 'fora de um título de Receita' };
+    const lida = titulo ? reconhecer(frase, justificativa, titulo, entrada, produtosPorNome) : { motivo: 'fora de um título de Receituário' };
     if (lida.item) itens.push(lida.item);
     else naoReconhecidas.push({ texto: linha, motivo: lida.motivo });
   }

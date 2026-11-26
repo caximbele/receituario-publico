@@ -52,7 +52,7 @@ function acoes(posicao, ...botoes) {
 }
 
 const contagem = (n, um, varios) => (n === 1 ? `1 ${um}` : `${n} ${varios}`);
-// "Bloqueio (itens 2 e 3): Receita de Controle Especial exige CPF."
+// "Bloqueio (itens 2 e 3): Receituário de Controle Especial exige CPF."
 const textoDoBloqueio = ({ itens: posicoes, mensagem }) => `Bloqueio (${nomeDosItens(posicoes)}): ${mensagem}`;
 
 // O que o Favorito mandou, já conferido por lerMensagem: { paciente, prescritor, unidade, lidoEm }, ou null.
@@ -338,7 +338,7 @@ function mostrarBarra(resultado) {
   const { receitas, alertas, bloqueios } = resultado;
   const saem = receitas.length
     ? `Saem: ${receitas.map((r) => `${r.tipo}, ${contagem(r.itens.length, 'item', 'itens')}`).join(' · ')}.`
-    : 'Nenhuma Receita sai.';
+    : 'Nenhum Receituário sai.';
   const ficam = desmarcados();
   $('receitas-que-saem').textContent = ficam.length ? `${saem} Fora desta impressão: ${nomeDosItens(ficam)}.` : saem;
   $('avisos-da-barra').replaceChildren(
@@ -662,7 +662,7 @@ $('renovar').addEventListener('click', () => {
   const ficaram = lido.naoReconhecidas.length ? `${contagem(lido.naoReconhecidas.length, 'linha não voltou', 'linhas não voltaram')}: veja abaixo.` : '';
   // A linha sem Produto no catálogo volta em texto livre, no Tipo de receita do título dela: o aviso manda conferi-lo.
   const livres = lido.itens.filter((item) => item.textoLivre !== undefined && item.textoLivre !== null).length;
-  const emTextoLivre = livres ? `${contagem(livres, 'voltou', 'voltaram')} em texto livre, fora do catálogo: confira o Tipo de receita.` : '';
+  const emTextoLivre = livres ? `${contagem(livres, 'voltou', 'voltaram')} em texto livre, fora do catálogo: confira o Tipo de receituário.` : '';
   $('resultado-renovar').textContent = [entraram, emTextoLivre, ficaram].filter(Boolean).join(' ') || 'Nenhuma linha de item no texto colado.';
   mostrarNaoReconhecidas();
   atualizar();
@@ -686,7 +686,7 @@ $('ver-previa').addEventListener('click', () => {
     ...resultado.bloqueios.map((b) => paragrafo('erro', textoDoBloqueio(b))),
     ...avisos.map((a) => paragrafo('alerta', a)),
   );
-  $('folhas-previa').replaceChildren(...(folhas.length ? folhas : [paragrafo('vazio', 'Nenhuma Receita sai.')]));
+  $('folhas-previa').replaceChildren(...(folhas.length ? folhas : [paragrafo('vazio', 'Nenhum Receituário sai.')]));
   $('previa').showModal();
 });
 $('fechar-previa').addEventListener('click', () => $('previa').close());

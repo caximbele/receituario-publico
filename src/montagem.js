@@ -42,10 +42,14 @@ const PERIODO_DO_CONTROLE_ESPECIAL = 60;
 //   erro do Período de dispensação ("O antimicrobiano"); nos outros, null;
 // - periodoPadrao: no tipo sem dispensacaoFixa, quantos dias de uso a Quantidade a dispensar cobre num item de Uso
 //   contínuo, quando o Prescritor não diz outro.
-const SIMPLES = 'Receita simples';
-const ANTIMICROBIANO = 'Receita de antimicrobiano';
-const GLP1 = 'Receita de agonista de GLP-1';
-const CONTROLE_ESPECIAL = 'Receita de Controle Especial';
+// O nome de cada tipo é o que a tela, o impresso e o Texto para colar mostram: "Receituário…", por decisão do usuário de
+// 26/11/2026. Os comentários continuam com o termo das normas e da spec, "Receita simples", "Receita de Controle
+// Especial". O nome é também a identidade do tipo: é o valor de tipoDeReceita no item em texto livre e o título que a
+// Renovação lê. Ao trocá-lo, acrescente o nome antigo ao TIPO_DO_TITULO da renovacao.js.
+const SIMPLES ='Receituário simples';
+const ANTIMICROBIANO = 'Receituário de antimicrobiano';
+const GLP1 = 'Receituário de agonista de GLP-1';
+const CONTROLE_ESPECIAL = 'Receituário de Controle Especial';
 // RDC 471/2021, art. 6º, parágrafo único: 2 Vias, com idade e sexo do paciente; art. 10: a farmácia retém a 2ª Via, e a
 // 1ª volta ao paciente, o inverso da Receita de Controle Especial. Os rótulos seguem os dizeres da Receita de Controle
 // Especial (Portaria 344, art. 52), trocados de Via (decisão do ticket 11). Vale para a Receita de antimicrobiano e,
@@ -180,15 +184,15 @@ function oQueOCatalogoDiz(divergencias) {
     const tipos = [...classes].filter((c) => NOMES_DOS_TIPOS_DE_RECEITA.includes(c));
     const notificacoes = [...classes].filter((c) => !tipos.includes(c));
     const diz = [
-      ...(tipos.length ? [`${varios ? 'vão' : 'vai'} na ${tipos.join(' ou na ')}`] : []),
+      ...(tipos.length ? [`${varios ? 'vão' : 'vai'} no ${tipos.join(' ou no ')}`] : []),
       ...(notificacoes.length ? [`${varios ? 'exigem' : 'exige'} ${notificacoes.join(' ou ')}`] : []),
     ].join(' ou ');
     return `${juntar(nomes.map(noMeioDaFrase))} ${diz}`;
   });
   const comNotificacao = divergencias.some(({ classes }) => [...classes].some((c) => !NOMES_DOS_TIPOS_DE_RECEITA.includes(c)));
   return `No catálogo, ${frases.join('; ')}. ${comNotificacao
-    ? 'Confira se este medicamento pode sair nesta Receita: a página não emite Notificação de Receita.'
-    : 'Confira o Tipo de receita.'}`;
+    ? 'Confira se este medicamento pode sair neste Receituário: a página não emite Notificação de Receita.'
+    : 'Confira o Tipo de receituário.'}`;
 }
 
 // O Período de dispensação padrão do item, pelo Tipo de receita dele. O item que exige Notificação de Receita não sai
@@ -393,7 +397,7 @@ function alertaDoLimite(produto, tratamento, inicio) {
   if (tratamento.dias <= emDias(limite, inicio)) return null;
   return {
     campo: 'justificativa',
-    mensagem: `O tratamento de ${tratamento.texto} passa do limite de ${contagem(limite.valor, limite.unidade)} da Receita de Controle `
+    mensagem: `O tratamento de ${tratamento.texto} passa do limite de ${contagem(limite.valor, limite.unidade)} do Receituário de Controle `
       + `Especial${anticonvulsivante ? ' para anticonvulsivante e antiparkinsoniano' : ''}: justifique com o CID. `
       + 'A justificativa sai impressa nas 2 Vias.',
   };
@@ -828,7 +832,7 @@ function montarItem(item, { catalogo, emissao, configuracao }) {
   // Sem a chave, o texto livre é da Receita simples; com ela, precisa ser um Tipo de receita.
   const comEscolha = emTextoLivre && item.tipoDeReceita !== undefined && item.tipoDeReceita !== null;
   const escolhaInvalida = comEscolha && tipo !== item.tipoDeReceita;
-  if (escolhaInvalida) erro('tipoDeReceita', 'Escolha o Tipo de receita.');
+  if (escolhaInvalida) erro('tipoDeReceita', 'Escolha o Tipo de receituário.');
   if (emTextoLivre && !textoLivre) {
     erro('textoLivre', 'Escreva o medicamento.');
     return comErros();
@@ -849,10 +853,10 @@ function montarItem(item, { catalogo, emissao, configuracao }) {
     const confira = oQueOCatalogoDiz(divergenciasDoCatalogo(textoLivre, tipo, catalogo))
       ?? (tipo === SIMPLES ? 'Confira se é antimicrobiano ou controlado.'
         : tipo === CONTROLE_ESPECIAL ? 'Confira se ele não exige Notificação de Receita, que esta página não emite.'
-        : 'Confira se o Tipo de receita está certo.');
+        : 'Confira se o Tipo de receituário está certo.');
     alertas.push({
       campo: 'tipoDeReceita',
-      mensagem: `Item em texto livre, sem classificação regulatória: ele vai para a ${tipo}${comEscolha ? ', o Tipo de receita escolhido' : ''}. ${confira}`,
+      mensagem: `Item em texto livre, sem classificação regulatória: ele vai para o ${tipo}${comEscolha ? ', o Tipo de receituário escolhido' : ''}. ${confira}`,
     });
   }
   const unidades = textoLivre ? UNIDADES_DE_DOSE_DO_TEXTO_LIVRE : unidadesDeDose(produto);
@@ -977,8 +981,8 @@ function montarItem(item, { catalogo, emissao, configuracao }) {
   if (validade !== null && diasEntre(emissao, inicio) > validade) {
     alertas.push({
       campo: 'inicio',
-      mensagem: `O início, ${dataBrasileira(inicio)}, cai depois do fim da Validade da ${tipo} (${contagem(validade, 'dia')} da emissão): `
-        + 'o paciente não conseguiria aviá-la quando fosse começar.',
+      mensagem: `O início, ${dataBrasileira(inicio)}, cai depois do fim da Validade do ${tipo} (${contagem(validade, 'dia')} da emissão): `
+        + 'o paciente não conseguiria aviá-lo quando fosse começar.',
     });
   }
 
