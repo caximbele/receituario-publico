@@ -86,12 +86,16 @@ const montar = (lista) => montarReceita({ ...atendimento(), itens: lista, emissa
 
 // A Montagem só dos itens marcados para sair, com as posições de volta às da lista inteira, para os bloqueios e os
 // avisos falarem do "item 3" que a lista mostra. Cada Receita numera os seus itens a partir de 1, como sempre.
-function montarOQueSai() {
+// comErro traz as posições dos itens marcados que estão com erro: a Montagem os deixa fora das Receitas, e o impresso
+// não pode sair sem eles sem o Prescritor saber. todos é a Montagem da lista inteira, quando quem chama já a tem: sem
+// item desmarcado, ela é a do que sai, e não se monta de novo.
+function montarOQueSai(todos = null) {
   const posicoes = itens.flatMap((item, i) => (foraDaImpressao.has(item) ? [] : [i]));
-  const resultado = montar(posicoes.map((i) => itens[i]));
+  const resultado = todos && posicoes.length === itens.length ? todos : montar(posicoes.map((i) => itens[i]));
   const naLista = (x) => ({ ...x, itens: x.itens.map((i) => posicoes[i]) });
   return {
     ...resultado,
+    comErro: posicoes.filter((_, k) => resultado.itens[k].erros.length),
     alertas: resultado.alertas.map(naLista),
     bloqueios: resultado.bloqueios.map(naLista),
     receitas: resultado.receitas.map((r) => ({ ...r, itens: r.itens.map((i) => ({ ...i, item: posicoes[i.item] })) })),
@@ -312,10 +316,15 @@ function mostrarLista({ itens: montados, alertas, bloqueios }) {
 }
 
 // Por que Imprimir e Copiar texto estão desligados, ou '' quando não estão. Com um bloqueio, não há impresso nem texto.
-function desligados({ receitas, bloqueios }) {
+// O item marcado com erro também desliga: a Montagem o tiraria da Receita, e ela sairia sem ele. Um item salvo ganha erro,
+// por exemplo, quando o início digitado fica antes da emissão, com a página aberta de um dia para o outro.
+function desligados({ receitas, bloqueios, comErro }) {
+  if (comErro.length) {
+    return `Imprimir e Copiar texto ficam desligados: ${nomeDosItens(comErro)} ${comErro.length > 1 ? 'estão' : 'está'} com erro. Corrija, tire ou desmarque.`;
+  }
   if (bloqueios.length) return 'Imprimir e Copiar texto ficam desligados enquanto houver bloqueio num item marcado para imprimir.';
   if (receitas.length) return '';
-  return itens.length && itens.every((item) => foraDaImpressao.has(item))
+  return itens.length
     ? 'Imprimir e Copiar texto ficam desligados: nenhum item está marcado para imprimir.'
     : 'Imprimir e Copiar texto ficam desligados: não há item na lista.';
 }
@@ -379,7 +388,7 @@ function atualizar() {
   // A lista mostra todos os itens, e o princípio ativo repetido conta também o item desmarcado. A barra é do que sai.
   const resultado = montar(itens);
   mostrarLista(resultado);
-  mostrarBarra({ ...montarOQueSai(), alertas: resultado.alertas });
+  mostrarBarra({ ...montarOQueSai(resultado), alertas: resultado.alertas });
 }
 
 // Limpa o formulário para um item novo; na edição, o item da lista fica como estava. O cursor volta ao Medicamento.
@@ -667,6 +676,7 @@ $('ver-previa').addEventListener('click', () => {
   const resultado = montarOQueSai();
   const { folhas, avisos } = folhasDoImpresso(resultado.receitas, viasPorFolha());
   $('avisos-previa').replaceChildren(
+    ...(resultado.comErro.length ? [paragrafo('erro', `Erro (${nomeDosItens(resultado.comErro)}): o item com erro não sai, e Imprimir fica desligado até ele ser corrigido, tirado ou desmarcado.`)] : []),
     ...resultado.bloqueios.map((b) => paragrafo('erro', textoDoBloqueio(b))),
     ...avisos.map((a) => paragrafo('alerta', a)),
   );
