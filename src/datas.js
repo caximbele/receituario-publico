@@ -48,16 +48,23 @@ export function datasMensais(inicio, dias) {
 // Os dias de "aaaa-mm-dd" a "aaaa-mm-dd".
 export const diasEntre = (de, ate) => (Date.parse(ate) - Date.parse(de)) / MS_POR_DIA;
 
-// A idade na data de emissão (RDC 471/2021, art. 6º): em anos ("66 anos", "1 ano"); abaixo de 1 ano, em meses ("8
-// meses"); abaixo de 1 mês, em dias ("17 dias"). O ano e o mês contam no dia do aniversário. Sem data de nascimento, ou
-// com uma que não existe ou é posterior à emissão, a idade fica em branco, para completar à mão.
-export function idade(nascimento, emissao) {
+// Os meses completos do nascimento até a emissão, com o mês contando no dia do aniversário. null sem data de
+// nascimento, ou com uma que não existe ou é posterior à emissão.
+export function mesesCompletos(nascimento, emissao) {
   const texto = String(nascimento ?? '').trim();
-  if (!dataExiste(texto) || texto > emissao) return '';
+  if (!dataExiste(texto) || texto > emissao) return null;
   const [anoNasc, mesNasc, diaNasc] = texto.split('-').map(Number);
   const [ano, mes, dia] = emissao.split('-').map(Number);
-  const meses = (ano - anoNasc) * 12 + (mes - mesNasc) - (dia < diaNasc ? 1 : 0);
+  return (ano - anoNasc) * 12 + (mes - mesNasc) - (dia < diaNasc ? 1 : 0);
+}
+
+// A idade na data de emissão (RDC 471/2021, art. 6º): em anos ("66 anos", "1 ano"); abaixo de 1 ano, em meses ("8
+// meses"); abaixo de 1 mês, em dias ("17 dias"). Sem data de nascimento válida, a idade fica em branco, para completar
+// à mão.
+export function idade(nascimento, emissao) {
+  const meses = mesesCompletos(nascimento, emissao);
+  if (meses === null) return '';
   if (meses >= 12) return contagem(Math.floor(meses / 12), 'ano');
   if (meses >= 1) return contagem(meses, 'mes');
-  return contagem(diasEntre(texto, emissao), 'dia');
+  return contagem(diasEntre(String(nascimento).trim(), emissao), 'dia');
 }
