@@ -17,7 +17,9 @@ const CHAVES = {
   prescritor: ['nome', 'conselho', 'numero', 'uf', 'cargo'],
   unidade: ['nome', 'cnes', 'endereco', 'telefone', 'municipio', 'uf'],
 };
-const TELAS = ['soap', 'renovacao'];
+const TELAS = ['soap', 'renovacao', 'upa'];
+// O sexo que o iSaúde guarda em código, no select da UPA e talvez no da SOAP.
+const SEXO = { female: 'Feminino', male: 'Masculino' };
 
 const FORMATO = 'Os dados do favorito vieram num formato que a página não conhece. Recrie o favorito na página Criar o favorito.';
 const VERSAO = 'Este favorito é de outra versão. Recrie o favorito na página Criar o favorito.';
@@ -31,15 +33,15 @@ const soAs = (parte, chaves) => Object.fromEntries(chaves.map((k) => [k, parte[k
 export function pacienteDoLido(lido) {
   const [nome, nascimento, sexo, cns, cpf] = CHAVES.lido.map((k) => lido[k].trim());
   const c = Object.fromEntries(CHAVES.cadastro.map((k) => [k, lido.cadastro[k].trim()]));
-  // Na tela SOAP, o cabeçalho é "{prontuário} - {NOME}", e o nome pode ter outro " - ".
+  // Nas telas SOAP e da UPA, o cabeçalho é "{prontuário} - {NOME}", e o nome pode ter outro " - ".
   const depois = nome.indexOf(' - ');
   const [, dia, mes, ano] = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(nascimento) ?? [];
   const data = ano ? `${ano}-${mes}-${dia}` : '';
   const digitos = cns.replace(/\s/g, '');
   return {
-    nome: lido.tela === 'soap' && depois >= 0 ? nome.slice(depois + 3).trim() : nome,
+    nome: lido.tela !== 'renovacao' && depois >= 0 ? nome.slice(depois + 3).trim() : nome,
     nascimento: data && dataExiste(data) ? data : '',
-    sexo,
+    sexo: SEXO[sexo] ?? sexo,
     cns: /^\d{15}$/.test(digitos) ? digitos.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4') : cns,
     cpf,
     // Sem o logradouro, não há endereço: só o município ou o bairro não bastam, e o alerta do endereço aparece
