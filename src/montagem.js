@@ -208,7 +208,7 @@ function periodoDeDispensacaoPadrao(nomeDoTipo) {
 // semConversao marca as formas sem conversão confiável, que sugerem 1 Unidade de fornecimento. conteudoEm, quando
 // existe, limita a regra aos Produtos cuja Unidade de fornecimento tem o conteúdo nessa unidade.
 const FORMAS = [
-  { forma: /^(creme|pomada|gel)\b/, unidades: ['aplicação'], semConversao: true },
+  { forma: /^(creme|pomada|gel|locao|xampu|solucao topica)\b/, unidades: ['aplicação'], semConversao: true },
   { forma: /inj|^amp\b|^carpule\b/, unidades: ['ml', 'ampola', 'frasco-ampola', 'UI'] },
   { forma: /^comp(rimido)?\b/, unidades: ['comprimido'] },
   { forma: /^cap(sula)?\b/, unidades: ['cápsula'] },
@@ -226,14 +226,18 @@ const FORMAS = [
   { forma: /^adesivo\b/, unidades: ['adesivo'] },
   { forma: /^supositorio\b/, unidades: ['supositório'] },
   { forma: /^ovulo\b/, unidades: ['óvulo'] },
+  // "Solução", sem mais nada, como o soro fisiológico em frasco: a Dose em ml.
+  { forma: /^solucao$/, unidades: ['ml'] },
 ];
-// O sachê não é forma no CATMAT, e sim Unidade de fornecimento ("Granulado", "Pó"): a Dose é o próprio sachê.
+// O sachê e o envelope não são forma no CATMAT, e sim Unidade de fornecimento ("Granulado", "Pó", "Pó para solução"):
+// a Dose é o próprio sachê ou envelope.
 const SACHE = { unidades: ['sachê'] };
+const ENVELOPE = { unidades: ['envelope'] };
 
 const regraDaForma = (produto) => {
   const forma = semAcento(produto.forma);
   const casa = (r) => r.forma.test(forma) && (!r.conteudoEm || r.conteudoEm === produto.fornecimento.unidade);
-  return FORMAS.find(casa) ?? (produto.fornecimento.tipo === 'sachê' ? SACHE : null);
+  return FORMAS.find(casa) ?? { sachê: SACHE, envelope: ENVELOPE }[produto.fornecimento.tipo] ?? null;
 };
 export const unidadesDeDose = (produto) => {
   const regra = regraDaForma(produto);
@@ -804,7 +808,7 @@ const TETOS_DA_DOSE = {
   gota: (via) => (VIAS_DA_GOTA_CONTADA.includes(via) ? 4 : 60),
   ml: (via) => (via === 0 ? 30 : VIAS_PARENTERAIS.includes(via) ? 10 : null),
   UI: (_via, insulina) => (insulina ? 100 : null),
-  ampola: 2, 'frasco-ampola': 2, sachê: 2, supositório: 2, óvulo: 2, adesivo: 2,
+  ampola: 2, 'frasco-ampola': 2, sachê: 2, envelope: 2, supositório: 2, óvulo: 2, adesivo: 2,
 };
 function tetoDaDose(unidade, viaAdministracao, insulina) {
   const teto = TETOS_DA_DOSE[unidade] ?? null;

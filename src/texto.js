@@ -49,6 +49,7 @@ const PALAVRAS = {
   supositório: ['supositório', 'supositórios'],
   óvulo: ['óvulo', 'óvulos'],
   sachê: ['sachê', 'sachês'],
+  envelope: ['envelope', 'envelopes'],
   // Unidades de fornecimento com conteúdo em ml, doses ou g, além das que já são Unidades de dose.
   frasco: ['frasco', 'frascos'],
   seringa: ['seringa', 'seringas', 'f'],
