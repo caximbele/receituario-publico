@@ -123,15 +123,78 @@ export const notificacao = (produto) => (produto?.portaria344 && !produto.portar
 // O Tipo de receita de um item, pela Classificação regulatória do Produto no catálogo. O item que exige Notificação de
 // Receita não tem Tipo de receita (null) e não sai em nenhuma Receita. O controlado vem antes do antimicrobiano e do
 // agonista de GLP-1, porque nunca vai com eles. Mundo fechado (ADR 0005): o Produto fora das listas vai para a Receita
-// simples, sem alerta. O texto livre também vai, com alerta.
+// simples, sem alerta. O texto livre vai para o Tipo de receita que o Prescritor escolhe (tipoEscolhido), com alerta.
 const TIPO_DA_IN360 = { antimicrobiano: ANTIMICROBIANO, glp1: GLP1 };
 const tipoDeReceita = (produto) => (notificacao(produto) ? null : doControleEspecial(produto) ? CONTROLE_ESPECIAL
   : TIPO_DA_IN360[produto?.in360] ?? SIMPLES);
 
-// O Período de dispensação padrão do item, pelo Tipo de receita do Produto; o texto livre (sem Produto) é da Receita
-// simples. O item que exige Notificação de Receita não sai em Receita nenhuma e fica com o da Receita simples.
-function periodoDeDispensacaoPadrao(produto) {
-  const tipo = TIPOS_DE_RECEITA[tipoDeReceita(produto)] ?? TIPOS_DE_RECEITA[SIMPLES];
+// O Tipo de receita do item em texto livre é o que o Prescritor escolhe, porque o catálogo não sabe a Classificação
+// regulatória dele. Sem escolha, como no item que a Renovação lia antes de haver a escolha, é a Receita simples; a
+// escolha que não é um Tipo de receita dá erro no item, que fica na Receita simples até ser corrigido.
+const tipoEscolhido = (item) => (NOMES_DOS_TIPOS_DE_RECEITA.includes(item.tipoDeReceita) ? item.tipoDeReceita : SIMPLES);
+
+// O que o catálogo diz dos fármacos escritos num texto livre, para alertar quando o Tipo de receita escolhido difere
+// dele. É uma conferência pelo nome, palavra por palavra e sem acento: não acha nome comercial nem erro de digitação, e
+// por isso só alerta, sem bloquear. Cada entrada é uma combinação de fármacos do catálogo, com as chaves cercadas de
+// espaços, os nomes e as classes: o Tipo de receita, ou a Notificação de Receita, de cada Produto dela.
+const emPalavras = (texto) => ` ${semAcento(texto).replace(/[^a-z0-9]+/g, ' ').trim()} `;
+const FARMACOS_DO_CATALOGO = new WeakMap();
+function farmacosDoCatalogo(catalogo) {
+  if (!FARMACOS_DO_CATALOGO.has(catalogo)) {
+    const porCombinacao = new Map();
+    for (const p of catalogo) {
+      const componentes = (p.principioAtivo ? farmacos(p.principioAtivo) : [])
+        .map((f) => ({ chave: emPalavras(f.chave), nome: f.nome })).filter((f) => f.chave.trim());
+      if (!componentes.length) continue;
+      const id = componentes.map((f) => f.chave).sort().join('+');
+      if (!porCombinacao.has(id)) {
+        porCombinacao.set(id, { chaves: componentes.map((f) => f.chave), nomes: componentes.map((f) => f.nome), classes: new Set() });
+      }
+      porCombinacao.get(id).classes.add(notificacao(p) ?? tipoDeReceita(p));
+    }
+    FARMACOS_DO_CATALOGO.set(catalogo, [...porCombinacao.values()]);
+  }
+  return FARMACOS_DO_CATALOGO.get(catalogo);
+}
+
+// As combinações do catálogo escritas no texto livre cuja classe não é o Tipo de receita escolhido. A combinação vale
+// mais que os componentes dela: "paracetamol + codeína" não é conferido como codeína sozinha. O fármaco que o catálogo
+// só tem na Receita simples não conta quando o texto traz outro com regra própria, para o paracetamol da combinação não
+// contestar a Receita de Controle Especial.
+function divergenciasDoCatalogo(textoLivre, tipo, catalogo) {
+  if (!Array.isArray(catalogo)) return [];
+  const texto = emPalavras(textoLivre);
+  const escritas = farmacosDoCatalogo(catalogo).filter((e) => e.chaves.every((c) => texto.includes(c)));
+  const contida = (e) => escritas.some((o) => o.chaves.length > e.chaves.length && e.chaves.every((c) => o.chaves.includes(c)));
+  const maiores = escritas.filter((e) => !contida(e));
+  const comRegra = maiores.filter((e) => !(e.classes.size === 1 && e.classes.has(SIMPLES)));
+  return (comRegra.length ? comRegra : maiores).filter((e) => !e.classes.has(tipo));
+}
+
+// "No catálogo, clonazepam exige Notificação de Receita B. Confira…": o trecho do alerta do texto livre, ou null se o
+// catálogo não contesta a escolha.
+function oQueOCatalogoDiz(divergencias) {
+  if (!divergencias.length) return null;
+  const frases = divergencias.map(({ nomes, classes }) => {
+    const varios = nomes.length > 1;
+    const tipos = [...classes].filter((c) => NOMES_DOS_TIPOS_DE_RECEITA.includes(c));
+    const notificacoes = [...classes].filter((c) => !tipos.includes(c));
+    const diz = [
+      ...(tipos.length ? [`${varios ? 'vão' : 'vai'} na ${tipos.join(' ou na ')}`] : []),
+      ...(notificacoes.length ? [`${varios ? 'exigem' : 'exige'} ${notificacoes.join(' ou ')}`] : []),
+    ].join(' ou ');
+    return `${juntar(nomes.map(noMeioDaFrase))} ${diz}`;
+  });
+  const comNotificacao = divergencias.some(({ classes }) => [...classes].some((c) => !NOMES_DOS_TIPOS_DE_RECEITA.includes(c)));
+  return `No catálogo, ${frases.join('; ')}. ${comNotificacao
+    ? 'Confira se este medicamento pode sair nesta Receita: a página não emite Notificação de Receita.'
+    : 'Confira o Tipo de receita.'}`;
+}
+
+// O Período de dispensação padrão do item, pelo Tipo de receita dele. O item que exige Notificação de Receita não sai
+// em Receita nenhuma (o tipo é null) e fica com o da Receita simples.
+function periodoDeDispensacaoPadrao(nomeDoTipo) {
+  const tipo = TIPOS_DE_RECEITA[nomeDoTipo] ?? TIPOS_DE_RECEITA[SIMPLES];
   return tipo.dispensacaoFixa ? DISPENSACAO_EM_USO_CONTINUO : tipo.periodoPadrao;
 }
 
@@ -324,7 +387,8 @@ function sugerir(modo, produto, unidade, total, dias, eventual = false) {
 // alerta do dobro.
 function alertaDoLimite(produto, tratamento, inicio) {
   if (!tratamento) return null;
-  const anticonvulsivante = produto.anticonvulsivanteOuAntiparkinsoniano === true;
+  // O texto livre não tem Produto: fica no limite de 60 dias, o mais rígido, mesmo sendo um anticonvulsivante.
+  const anticonvulsivante = produto?.anticonvulsivanteOuAntiparkinsoniano === true;
   const limite = anticonvulsivante ? LIMITE_DO_ANTICONVULSIVANTE_OU_ANTIPARKINSONIANO : LIMITE_DE_TRATAMENTO;
   if (tratamento.dias <= emDias(limite, inicio)) return null;
   return {
@@ -757,9 +821,14 @@ function montarItem(item, { catalogo, emissao, configuracao }) {
   const emTextoLivre = item.textoLivre !== undefined && item.textoLivre !== null;
   const textoLivre = emTextoLivre ? textoLivreDe(item) : '';
   const produto = emTextoLivre ? null : catalogo.find((p) => p.codigo === item.produto);
+  const tipo = emTextoLivre ? tipoEscolhido(item) : tipoDeReceita(produto);
   // O padrão do Período de dispensação vai também no item com erro, para a tela preencher o campo desde o início.
-  const periodoPadrao = periodoDeDispensacaoPadrao(produto);
+  const periodoPadrao = periodoDeDispensacaoPadrao(tipo);
   const comErros = (dose = null) => ({ produto, resultado: { dose, periodoDispensacaoPadrao: periodoPadrao, erros, alertas } });
+  // Sem a chave, o texto livre é da Receita simples; com ela, precisa ser um Tipo de receita.
+  const comEscolha = emTextoLivre && item.tipoDeReceita !== undefined && item.tipoDeReceita !== null;
+  const escolhaInvalida = comEscolha && tipo !== item.tipoDeReceita;
+  if (escolhaInvalida) erro('tipoDeReceita', 'Escolha o Tipo de receita.');
   if (emTextoLivre && !textoLivre) {
     erro('textoLivre', 'Escreva o medicamento.');
     return comErros();
@@ -771,12 +840,19 @@ function montarItem(item, { catalogo, emissao, configuracao }) {
   const fornecimentoDoItem = textoLivre ? { tipo: item.unidadeFornecimento, conteudo: null, unidade: null } : produto.fornecimento;
   // Fora da REMUME o Produto pode ser receitado, para o paciente comprar, sem alerta: a busca já diz quando está na
   // rede (decisão do usuário de 11/11/2026).
-  // O texto livre não tem princípio ativo conhecido: vai para a Receita simples, mas pode ser um antimicrobiano ou um
-  // controlado (decisão do ticket 13). O Produto fora das listas não ganha alerta: o mundo é fechado (ticket 18).
-  if (textoLivre) {
+  // O texto livre não tem princípio ativo conhecido: vai para o Tipo de receita que o Prescritor escolheu, e a escolha
+  // pode estar errada (decisão do ticket 13, e a escolha, do usuário, de 26/11/2026). Na Receita de Controle Especial,
+  // ele pode ser de uma lista que exige Notificação de Receita, que a página não reconhece no texto. O Produto fora das
+  // listas não ganha alerta: o mundo é fechado (ticket 18). Quando o texto traz um fármaco que o catálogo põe em outro
+  // Tipo de receita, ou numa Notificação de Receita, o alerta diz qual. Com a escolha inválida, o erro já diz o que fazer.
+  if (textoLivre && !escolhaInvalida) {
+    const confira = oQueOCatalogoDiz(divergenciasDoCatalogo(textoLivre, tipo, catalogo))
+      ?? (tipo === SIMPLES ? 'Confira se é antimicrobiano ou controlado.'
+        : tipo === CONTROLE_ESPECIAL ? 'Confira se ele não exige Notificação de Receita, que esta página não emite.'
+        : 'Confira se o Tipo de receita está certo.');
     alertas.push({
-      campo: 'textoLivre',
-      mensagem: 'Item em texto livre, sem classificação regulatória: ele vai para a Receita simples, e o Tipo de receita pode estar errado. Confira se é antimicrobiano ou controlado.',
+      campo: 'tipoDeReceita',
+      mensagem: `Item em texto livre, sem classificação regulatória: ele vai para a ${tipo}${comEscolha ? ', o Tipo de receita escolhido' : ''}. ${confira}`,
     });
   }
   const unidades = textoLivre ? UNIDADES_DE_DOSE_DO_TEXTO_LIVRE : unidadesDeDose(produto);
@@ -821,7 +897,6 @@ function montarItem(item, { catalogo, emissao, configuracao }) {
   // O antimicrobiano e o agonista de GLP-1 em Uso contínuo são receitados para cada 30 dias (RDC 471/2021, art. 9º;
   // decisão do ticket 20 para o GLP-1): o Período de dispensação fica nesses 30 dias, e a Quantidade a dispensar é a
   // de cada um deles.
-  const tipo = tipoDeReceita(produto);
   const dispensacaoFixa = usoContinuo && Boolean(TIPOS_DE_RECEITA[tipo]?.dispensacaoFixa);
   const duracao = { valor: Number(item.duracao?.valor), unidade: item.duracao?.unidade };
   // As recomendações, em texto livre como no iSaúde, vão no fim da frase.
@@ -1101,9 +1176,10 @@ const LISTA_C1 = 'C1';
 const MAXIMO_DE_C1_POR_RECEITA = 3;
 
 // Os itens de Controle Especial, divididos em Receitas: os da C1 de 3 em 3, na ordem da lista, e os da C5 e dos adendos,
-// sem limite na norma, na 1ª (o limite deles é uma pergunta pendente da spec).
+// sem limite na norma, na 1ª (o limite deles é uma pergunta pendente da spec). O texto livre, sem Produto, não diz a
+// lista: conta como da C1, o que só é mais rígido.
 function receitasDeControleEspecial(montados) {
-  const c1 = montados.filter((m) => m.produto.portaria344.lista === LISTA_C1);
+  const c1 = montados.filter((m) => (m.produto?.portaria344.lista ?? LISTA_C1) === LISTA_C1);
   const outros = montados.filter((m) => !c1.includes(m));
   const receitas = [];
   for (let i = 0; i < c1.length; i += MAXIMO_DE_C1_POR_RECEITA) receitas.push(c1.slice(i, i + MAXIMO_DE_C1_POR_RECEITA));

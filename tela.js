@@ -3,7 +3,7 @@
 // regra de cálculo, Frase ou separação fica aqui: elas estão em src/. Nada do paciente sai da memória: sem armazenamento do navegador, sem URL e sem arquivo.
 import {
   montarReceita, unidadesDeDose, viasPermitidas, temDuracao, notificacao, CONDICOES_SE_NECESSARIO, TODAS_AS_VIAS,
-  UNIDADES_DE_DOSE_DO_TEXTO_LIVRE, UNIDADES_DE_FORNECIMENTO_DO_TEXTO_LIVRE,
+  UNIDADES_DE_DOSE_DO_TEXTO_LIVRE, UNIDADES_DE_FORNECIMENTO_DO_TEXTO_LIVRE, NOMES_DOS_TIPOS_DE_RECEITA,
 } from './src/montagem.js';
 import { VIAS_DE_ADMINISTRACAO } from './src/produto.js';
 import { buscarProdutos, descreverProduto } from './src/busca.js';
@@ -185,6 +185,7 @@ function mostrarCampos() {
   $('bloco-produto').hidden = livre;
   $('bloco-texto-livre').hidden = !livre;
   $('bloco-fornecimento').hidden = !livre;
+  $('bloco-tipo-de-receita').hidden = !livre;
   [...$('etapas').children].forEach((el, i) => {
     el.hidden = i >= quantasEtapas();
     el.querySelector('label[for$=".numero"]').textContent = NUMERO_DA_ETAPA[etapa(i, 'posologia').value][1];
@@ -211,7 +212,7 @@ function rascunho() {
   const tipo = $('posologia').value;
   return {
     ...(foraDoCatalogo()
-      ? { textoLivre: $('textoLivre').value, unidadeFornecimento: $('unidadeFornecimento').value }
+      ? { textoLivre: $('textoLivre').value, unidadeFornecimento: $('unidadeFornecimento').value, tipoDeReceita: $('tipoDeReceita').value }
       : { produto: escolhido?.codigo ?? '' }),
     dose: { valor: $('dose').value, unidade: $('unidade').value },
     viaAdministracao: $('viaAdministracao').value === '' ? null : Number($('viaAdministracao').value),
@@ -237,6 +238,8 @@ function preencher(item) {
   $('foraDoCatalogo').checked = item.textoLivre !== undefined && item.textoLivre !== null;
   $('textoLivre').value = valor(item.textoLivre);
   $('unidadeFornecimento').value = valor(item.unidadeFornecimento);
+  // O item sem a escolha é da Receita simples, a 1ª opção.
+  $('tipoDeReceita').value = item.tipoDeReceita ?? NOMES_DOS_TIPOS_DE_RECEITA[0];
   escolhido = catalogo.find((p) => p.codigo === item.produto) ?? null;
   campoProduto.value = escolhido ? descreverProduto(escolhido).rotulo : '';
   opcoesDoProduto();
@@ -657,7 +660,10 @@ $('renovar').addEventListener('click', () => {
   $('texto-renovar').value = '';
   const entraram = lido.itens.length ? `${contagem(lido.itens.length, 'item entrou', 'itens entraram')} na lista.` : '';
   const ficaram = lido.naoReconhecidas.length ? `${contagem(lido.naoReconhecidas.length, 'linha não voltou', 'linhas não voltaram')}: veja abaixo.` : '';
-  $('resultado-renovar').textContent = [entraram, ficaram].filter(Boolean).join(' ') || 'Nenhuma linha de item no texto colado.';
+  // A linha sem Produto no catálogo volta em texto livre, no Tipo de receita do título dela: o aviso manda conferi-lo.
+  const livres = lido.itens.filter((item) => item.textoLivre !== undefined && item.textoLivre !== null).length;
+  const emTextoLivre = livres ? `${contagem(livres, 'voltou', 'voltaram')} em texto livre, fora do catálogo: confira o Tipo de receita.` : '';
+  $('resultado-renovar').textContent = [entraram, emTextoLivre, ficaram].filter(Boolean).join(' ') || 'Nenhuma linha de item no texto colado.';
   mostrarNaoReconhecidas();
   atualizar();
 });
@@ -717,6 +723,8 @@ $('etapas').innerHTML = Array.from({ length: MAXIMO_DE_ETAPAS }, (_, i) => $('mo
   .replaceAll('{i}', String(i)).replaceAll('{n}', String(i + 1))).join('');
 preencherOpcoes($('sintoma'), Object.entries(CONDICOES_SE_NECESSARIO));
 preencherOpcoes($('unidadeFornecimento'), UNIDADES_DE_FORNECIMENTO_DO_TEXTO_LIVRE.map((u) => [u, u]));
+// Sem a opção em branco: o Tipo de receita do texto livre começa na Receita simples, a 1ª, como antes de haver a escolha.
+$('tipoDeReceita').replaceChildren(...NOMES_DOS_TIPOS_DE_RECEITA.map((t) => new Option(t, t)));
 $('paciente-ficticio').replaceChildren(...demonstracao.pacientes.map((p) => new Option(p.nome, p.id)));
 // A data de início em branco é a de emissão, e o calendário não oferece datas anteriores à de hoje.
 $('inicio').min = hoje();

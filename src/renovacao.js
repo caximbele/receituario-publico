@@ -9,8 +9,6 @@ import { nomeDoProduto, VIAS_DE_ADMINISTRACAO } from './produto.js';
 import { buscarProdutos } from './busca.js';
 import { plural } from './texto.js';
 
-// O texto livre só volta sob a Receita simples: um controlado que saiu do catálogo não volta numa Receita simples.
-const SIMPLES = 'Receita simples';
 const VERBOS = '(?:Tomar|Aplicar|Inalar|Pingar|Introduzir|Usar)';
 // O verbo não é lido, porque a Montagem o escreve de novo. Depois da Quantidade, só o conteúdo da Unidade de fornecimento
 // (" de 1.000 ml", com o ponto do milhar) e o "para cada 30 dias" do Uso contínuo; o resto são as recomendações.
@@ -115,7 +113,8 @@ function reconhecer(frase, justificativa, titulo, entrada, produtosPorNome) {
   // O nome é o primeiro trecho antes de um ". " que é nome de Produto: há nomes com ". " dentro, como "Aesculus
   // hippocastanum L. (castanha da índia) 100 mg — cápsula".
   const nome = [...frase.matchAll(/\. /g)].map((m) => frase.slice(0, m.index)).find((n) => produtosPorNome.has(n));
-  if (nome === undefined && titulo !== SIMPLES) return { motivo: 'Produto não encontrado' };
+  // Sem Produto com esse nome, a linha volta em texto livre, com o Tipo de receita do título: o controlado que saiu do
+  // catálogo continua na Receita de Controle Especial, e não cai na Receita simples.
   const textoLivre = nome === undefined ? frase.match(NOME_DO_TEXTO_LIVRE)?.[1] : null;
   const falha = nome === undefined ? 'Produto não encontrado' : 'Frase diferente';
   const nomeLido = nome ?? textoLivre;
@@ -142,7 +141,7 @@ function reconhecer(frase, justificativa, titulo, entrada, produtosPorNome) {
     })
     : [[unidadeDa(UNIDADES_DE_DOSE_DO_TEXTO_LIVRE, palavra), unidadeDa(UNIDADES_DE_FORNECIMENTO_DO_TEXTO_LIVRE, palavraDaQuantidade)]]
       .filter(([unidade, fornecimento]) => unidade && fornecimento)
-      .map(([unidade, unidadeFornecimento]) => comoItem({ textoLivre, unidadeFornecimento }, unidade));
+      .map(([unidade, unidadeFornecimento]) => comoItem({ textoLivre, unidadeFornecimento, tipoDeReceita: titulo }, unidade));
 
   // A prova, em passadas pelos candidatos, na ordem: na 1ª, com a Quantidade a dispensar sugerida; na 2ª, com a do
   // texto, como Ajuste manual. Assim, o frasco cuja sugerida já dá a Quantidade vence o outro ajustado à mão. A
@@ -160,12 +159,18 @@ function reconhecer(frase, justificativa, titulo, entrada, produtosPorNome) {
   // A 3ª, só no Uso contínuo com justificativa (ticket 20): o Período de dispensação não está na Frase, e o padrão pode
   // deixar o tratamento dentro do limite. Vale o menor Período acima do padrão cuja sugerida dá a Quantidade do texto e
   // que ainda exige a justificativa. A sugerida só cresce com o Período: a busca para quando ela passa da do texto.
+  // Sem sugerida, como no texto livre e no Produto sem conversão, a Quantidade é sempre a do texto, e vale o menor
+  // Período que exige a justificativa.
   const comPeriodo = ([c, montado]) => {
     for (let dias = montado.periodoDispensacaoPadrao + 1; dias <= PERIODO_MAXIMO; dias += 1) {
-      const tentativa = montar({ ...c, periodoDispensacao: String(dias) });
+      const comDias = { ...c, periodoDispensacao: String(dias) };
+      const tentativa = montar(comDias);
       if (passa(tentativa)) return tentativa;
-      // Passou da Quantidade do texto, ou o item tem erro e não tem sugerida.
-      if (!(tentativa[1].quantidadeDispensarSugerida <= total)) return null;
+      const sugerida = tentativa[1].quantidadeDispensarSugerida ?? null;
+      if (sugerida === null) {
+        const comADoTexto = montar({ ...comDias, quantidadeDispensar: String(total) });
+        if (passa(comADoTexto)) return comADoTexto;
+      } else if (sugerida > total) return null; // Passou da Quantidade do texto.
     }
     return null;
   };
