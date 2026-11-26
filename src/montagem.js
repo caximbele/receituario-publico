@@ -473,6 +473,8 @@ export const CONDICOES_SE_NECESSARIO = {
   dor: 'dor',
   febre: 'febre',
   falta_de_ar: 'falta de ar',
+  // Para a lavagem nasal com soro (decisão de 26/11/2026). Antes da última, que traz o "ou" da lista.
+  congestao_nasal: 'congestão nasal',
   nauseas_ou_vomitos: 'náuseas ou vômitos',
 };
 
