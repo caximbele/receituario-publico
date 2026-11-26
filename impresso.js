@@ -116,12 +116,14 @@ function cabemNaFolha(blocos) {
 }
 
 // As folhas das Receitas com as Vias por folha escolhidas (ADR 0006): cada Via nas suas folhas A4 retrato, ou as 2 Vias
-// da Receita lado a lado numa folha A4 paisagem. A Receita simples, de uma Via só, sai sempre na folha retrato. Os
-// avisos dizem que Receita não coube com 2 Vias por folha.
+// da Receita lado a lado numa folha A4 paisagem. A Receita simples tem uma Via só: com 1 Via por folha, sai uma vez, na
+// folha retrato; com 2, sai em duas vias iguais, sem rótulo, lado a lado como as outras (decisão do usuário de
+// 26/11/2026). Os avisos dizem que Receita não coube com 2 Vias por folha.
 export function folhasDoImpresso(receitas, viasPorFolha) {
   const avisos = [];
   const folhas = receitas.flatMap((receita) => {
-    const blocos = receita.vias.map((via) => blocoDaVia(receita, via));
+    const daReceita = receita.vias.map((via) => blocoDaVia(receita, via));
+    const blocos = viasPorFolha === 2 && daReceita.length === 1 ? [daReceita[0], daReceita[0]] : daReceita;
     const total = receita.itens.length;
     if (viasPorFolha === 2 && blocos.length === 2) {
       const ladoALado = blocos.map((bloco) => blocoNaFolha(bloco, [0, total], true));

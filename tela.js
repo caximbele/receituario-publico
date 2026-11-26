@@ -336,8 +336,10 @@ function desligados({ receitas, bloqueios, comErro }) {
 // marcados, e os botões.
 function mostrarBarra(resultado) {
   const { receitas, alertas, bloqueios } = resultado;
+  // Com 2 Vias por folha, o Receituário de uma Via só sai em duas vias iguais (impresso.js), e a barra o diz.
+  const emDuasVias = (r) => (r.vias.length === 1 && viasPorFolha() === 2 ? ', em 2 vias' : '');
   const saem = receitas.length
-    ? `Saem: ${receitas.map((r) => `${r.tipo}, ${contagem(r.itens.length, 'item', 'itens')}`).join(' · ')}.`
+    ? `Saem: ${receitas.map((r) => `${r.tipo}, ${contagem(r.itens.length, 'item', 'itens')}${emDuasVias(r)}`).join(' · ')}.`
     : 'Nenhum Receituário sai.';
   const ficam = desmarcados();
   $('receitas-que-saem').textContent = ficam.length ? `${saem} Fora desta impressão: ${nomeDosItens(ficam)}.` : saem;
@@ -690,6 +692,8 @@ $('ver-previa').addEventListener('click', () => {
   $('previa').showModal();
 });
 $('fechar-previa').addEventListener('click', () => $('previa').close());
+// A barra diz quando o Receituário simples sai em duas vias, o que depende das Vias por folha.
+$('vias-por-folha').addEventListener('change', atualizar);
 $('imprimir').addEventListener('click', () => window.print());
 // O papel leva as folhas da prévia, postas antes de imprimir, também no Ctrl+P. Com um bloqueio, não leva nenhuma.
 window.addEventListener('beforeprint', () => {
