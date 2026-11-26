@@ -13,9 +13,11 @@ import { renovar } from './src/renovacao.js';
 import { folhasDoImpresso } from './impresso.js';
 import { nomeDosItens } from './src/texto.js';
 import { ORIGEM_DO_ISAUDE, doIsaude, lerMensagem } from './src/mensagem.js';
+import { quadroDosPadroes } from './src/padroes.js';
 import catalogo from './dados/catalogo.js';
 import configuracao from './dados/configuracao.js';
 import demonstracao from './dados/demonstracao.js';
+import padroes from './dados/padroes.js';
 
 const $ = (id) => document.getElementById(id);
 const form = $('item');
@@ -148,6 +150,43 @@ function mostrarTopo() {
   ]);
   $('selo').hidden = !demo;
   $('bloco-paciente-ficticio').hidden = !demo;
+  const { mostrar, alerta } = quadroDosPadroes(paciente.nascimento, hoje());
+  $('quadro-padroes').hidden = !mostrar;
+  $('alerta-padroes').textContent = alerta ?? '';
+}
+
+// Um quadro por Grupo, na ordem de dados/padroes.js, com um botão por Padrão.
+function montarPadroes() {
+  const grupos = new Map();
+  padroes.forEach(({ grupo, nome }, i) => {
+    if (!grupos.has(grupo)) {
+      const quadro = document.createElement('fieldset');
+      const legenda = document.createElement('legend');
+      const botoes = document.createElement('div');
+      legenda.textContent = grupo;
+      botoes.className = 'atalhos';
+      quadro.append(legenda, botoes);
+      $('grupos-padroes').append(quadro);
+      grupos.set(grupo, botoes);
+    }
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.dataset.padrao = String(i);
+    botao.textContent = nome;
+    grupos.get(grupo).append(botao);
+  });
+}
+
+// O Padrão entra como item novo, como depois do Esc: a edição em curso fica sem gravar. A cópia impede que mexer no
+// formulário mude a lista de Padrões. O foco vai para a Dose, e o Enter acrescenta o item.
+function usarPadrao(indice) {
+  editando = null;
+  tentou = false;
+  tocados.clear();
+  fecharBusca();
+  preencher(structuredClone(padroes[indice].item));
+  atualizar();
+  $('dose').focus();
 }
 
 // Escolhido o Produto, a Unidade de dose e a Via de administração vêm preenchidas quando há uma só opção. Com mais de
@@ -618,6 +657,10 @@ form.addEventListener('keydown', (evento) => {
   }
 });
 for (const botao of form.querySelectorAll('.atalhos button')) botao.addEventListener('click', () => usarAtalho(botao.dataset));
+montarPadroes();
+$('grupos-padroes').addEventListener('click', ({ target }) => {
+  if (target.dataset.padrao !== undefined) usarPadrao(Number(target.dataset.padrao));
+});
 $('salvar').addEventListener('click', salvar);
 $('limpar').addEventListener('click', limpar);
 $('itens').addEventListener('click', ({ target }) => {

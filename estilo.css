@@ -40,7 +40,8 @@ input[type="checkbox"] { width: auto; margin: 0 .4rem 0 0; vertical-align: -.1re
 input::placeholder { color: #475569; } /* a sugerida e o padrão, que valem com o campo em branco */
 option:disabled { color: #94a3b8; }
 /* As Etapas, cada uma no seu quadro, dentro do quadro delas. */
-fieldset.etapas, fieldset.etapa { margin: .75rem 0 0; padding: 0 .75rem .5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+fieldset.etapas, fieldset.etapa, .padroes fieldset { margin: .75rem 0 0; padding: 0 .75rem .5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+.padroes .alerta:empty { display: none; }
 fieldset legend { padding: 0 .25rem; font-weight: 600; }
 #numero-de-etapas { width: auto; }
 .par { display: flex; gap: .5rem; }
