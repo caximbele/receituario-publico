@@ -112,6 +112,8 @@ textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1
 .em-edicao { background: #fef9c3; }
 /* A caixa "imprimir" de cada item, na linha dos botões. O item desmarcado diz "(fora desta impressão)", e não só muda de cor. */
 .itens-da-lista label { display: inline; margin: 0 .75rem 0 0; font-weight: 400; }
+/* A caixa "imprimir todos", acima da lista, alinhada com as caixas dos itens. */
+.todos { margin: .5rem 0 0 1.75rem; font-weight: 400; }
 .fora-da-impressao .frase { color: #475569; }
 .vazio { margin: .5rem 0 0; color: #475569; }
 

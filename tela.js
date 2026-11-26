@@ -302,6 +302,11 @@ function mostrarLista({ itens: montados, alertas, bloqueios }) {
     return li;
   }));
   $('sem-itens').hidden = montados.length > 0;
+  // A caixa de todos: marcada com todos os itens marcados, e no meio-termo com só uma parte deles.
+  const marcados = itens.filter((item) => !foraDaImpressao.has(item)).length;
+  $('bloco-todos').hidden = !itens.length;
+  $('imprimir-todos').checked = marcados === itens.length;
+  $('imprimir-todos').indeterminate = marcados > 0 && marcados < itens.length;
 }
 
 // Por que Imprimir e Copiar texto estão desligados, ou '' quando não estão. Com um bloqueio, não há impresso nem texto.
@@ -612,6 +617,14 @@ $('itens').addEventListener('change', ({ target }) => {
   else foraDaImpressao.add(itens[posicao]);
   atualizar();
   $('itens').querySelector(`input[data-posicao="${posicao}"]`).focus();
+});
+// A caixa "imprimir todos": marca ou desmarca todos os itens de uma vez.
+$('imprimir-todos').addEventListener('change', ({ target }) => {
+  for (const item of itens) {
+    if (target.checked) foraDaImpressao.delete(item);
+    else foraDaImpressao.add(item);
+  }
+  atualizar();
 });
 $('paciente-ficticio').addEventListener('change', () => {
   mostrarTopo();
