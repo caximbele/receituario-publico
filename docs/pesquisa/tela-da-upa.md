@@ -45,6 +45,18 @@ teste (261622, fictício).
 - Logado na UPA, o atendimento SOAP da USF do paciente teste dá HTTP 401: não deu para conferir agora como a SOAP
   escreve o sexo nem o que o `warehouse` diz na USF.
 
+## O Favorito novo na UPA (26/11/2026)
+
+Conferido na tela da UPA, com outro paciente aberto: só a estrutura, sem ler valores do paciente, e sem rodar o Favorito.
+- A conferência pelo topo (ADR 0012) aceita "UPA UNIDADE DE PRONTO ATENDIMENTO DE BRUMADINHO" e recusa
+  "UPA UNIDADE DE PRONTO" e "Almoxarifado Farmácia Central".
+- `#patient-header h3`, `#clinical_attendance_patient_id` e `#clinical_attendance_patient_sus_nacional_card` existem.
+  O sexo é um `select` com os valores `female` e `male`, que a página escreve por extenso.
+- O cadastro do paciente teste, lido por GET com os laços do Favorito, dá a data de nascimento (fora de fieldset), o CPF
+  ("documentos basicos: cpf"), o endereço e o contato nas chaves de sempre.
+
+Falta o teste de ponta a ponta, com o Favorito clicado no atendimento do paciente teste na UPA, e a conferência na USF.
+
 ## As Receitas Padrões do próprio iSaúde
 
 - O iSaúde já tem "Receitas Padrões" (`/saude/standard_medical_prescriptions`): descrição, unidade, especialidade,
