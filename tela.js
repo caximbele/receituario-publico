@@ -79,6 +79,8 @@ const naoReconhecidas = [];
 let copiado = null;
 // Os itens desmarcados na lista: ficam fora da prévia, do impresso e do Texto para colar, para a Receita sair em partes.
 const foraDaImpressao = new WeakSet();
+// As posições dos itens desmarcados, a partir de 0.
+const desmarcados = () => itens.flatMap((item, i) => (foraDaImpressao.has(item) ? [i] : []));
 
 const montar = (lista) => montarReceita({ ...atendimento(), itens: lista, emissao: hoje(), catalogo, configuracao });
 
@@ -325,7 +327,7 @@ function mostrarBarra(resultado) {
   const saem = receitas.length
     ? `Saem: ${receitas.map((r) => `${r.tipo}, ${contagem(r.itens.length, 'item', 'itens')}`).join(' · ')}.`
     : 'Nenhuma Receita sai.';
-  const ficam = itens.flatMap((item, i) => (foraDaImpressao.has(item) ? [i] : []));
+  const ficam = desmarcados();
   $('receitas-que-saem').textContent = ficam.length ? `${saem} Fora desta impressão: ${nomeDosItens(ficam)}.` : saem;
   $('avisos-da-barra').replaceChildren(
     ...alertas.map((a) => paragrafo('alerta', `Alerta: ${a.mensagem}`)),
@@ -683,8 +685,15 @@ $('copiar').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(texto);
     copiado = texto;
-    $('copiado').textContent = 'Copiado: cole na Receita manual do iSaúde.';
+    // O texto só leva os itens marcados. Com item desmarcado, o aviso diz quais ficaram de fora, para a evolução não
+    // guardar a Receita pela metade sem o Prescritor saber: a Renovação só devolve o que está no texto.
+    const ficam = desmarcados();
+    $('copiado').className = ficam.length ? 'alerta' : '';
+    $('copiado').textContent = ficam.length
+      ? `Copiado só com os itens marcados: cole na Receita manual do iSaúde. Alerta: ${nomeDosItens(ficam)} ${ficam.length > 1 ? 'ficaram' : 'ficou'} fora do texto; para o texto da Receita inteira, marque todos e copie de novo.`
+      : 'Copiado: cole na Receita manual do iSaúde.';
   } catch {
+    $('copiado').className = '';
     copiado = null;
     $('copiado').textContent = 'Não foi possível copiar: o navegador não deixou usar a área de transferência.';
   }
