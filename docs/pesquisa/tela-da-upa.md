@@ -55,7 +55,9 @@ Conferido na tela da UPA, com outro paciente aberto: só a estrutura, sem ler va
 - O cadastro do paciente teste, lido por GET com os laços do Favorito, dá a data de nascimento (fora de fieldset), o CPF
   ("documentos basicos: cpf"), o endereço e o contato nas chaves de sempre.
 
-Falta o teste de ponta a ponta, com o Favorito clicado no atendimento do paciente teste na UPA, e a conferência na USF.
+O paciente teste não tem atendimento na UPA, e criar um seria gravar no iSaúde. O teste de ponta a ponta do Favorito
+novo fica para a SOAP do paciente teste na USF, logado lá, que confere também a unidade pelo topo na USF. Na UPA, a
+primeira conferência de ponta a ponta é o primeiro uso real, pelo Prescritor, depois de publicado.
 
 ## As Receitas Padrões do próprio iSaúde
 
