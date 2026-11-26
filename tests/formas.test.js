@@ -46,6 +46,13 @@ for (const { codigo, nome, unidades, via } of CASOS) {
   });
 }
 
+test('linha de envelope fora do catálogo volta em texto livre', () => {
+  const texto = 'Receituário simples\n1. Remedio inexistente 3 g. Tomar 01 envelope por via oral, dose única. Quantidade: 01 envelope.';
+  const { itens } = renovar(texto, entrada([]));
+  assert.equal(itens.length, 1);
+  assert.equal(itens[0].textoLivre, 'Remedio inexistente 3 g');
+});
+
 test('envelope sai como envelope', () => {
   const item = { produto: 'BR0378055', dose: { valor: '1', unidade: 'envelope' }, viaAdministracao: 0, posologia: { tipo: 'dose_unica' } };
   assert.match(montarReceita(entrada([item])).itens[0].frase, /Tomar 01 envelope por via oral, dose única\. Quantidade: 01 envelope/);

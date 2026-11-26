@@ -178,7 +178,8 @@ function montarPadroes() {
 }
 
 // O Padrão entra como item novo, como depois do Esc: a edição em curso fica sem gravar. A cópia impede que mexer no
-// formulário mude a lista de Padrões. O foco vai para a Dose, e o Enter acrescenta o item.
+// formulário mude a lista de Padrões. O foco vai para a Dose, ou para a Posologia quando a Dose é por Etapa, e o Enter
+// acrescenta o item.
 function usarPadrao(indice) {
   editando = null;
   tentou = false;
@@ -186,7 +187,7 @@ function usarPadrao(indice) {
   fecharBusca();
   preencher(structuredClone(padroes[indice].item));
   atualizar();
-  $('dose').focus();
+  ($('bloco-dose').hidden ? $('posologia') : $('dose')).focus();
 }
 
 // Escolhido o Produto, a Unidade de dose e a Via de administração vêm preenchidas quando há uma só opção. Com mais de

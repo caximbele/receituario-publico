@@ -246,10 +246,10 @@ export const unidadesDeDose = (produto) => {
 
 // Item em texto livre (decisões do ticket 10): medicamento fora do catálogo, sem Produto. Sem forma, ele aceita todas as
 // Unidades de dose, e sem Unidade de fornecimento no CATMAT, o Prescritor a escolhe entre as que a frase sabe escrever.
-export const UNIDADES_DE_DOSE_DO_TEXTO_LIVRE = [...new Set([...FORMAS, SACHE].flatMap((r) => r.unidades))];
+export const UNIDADES_DE_DOSE_DO_TEXTO_LIVRE = [...new Set([...FORMAS, SACHE, ENVELOPE].flatMap((r) => r.unidades))];
 export const UNIDADES_DE_FORNECIMENTO_DO_TEXTO_LIVRE = [
-  'comprimido', 'cápsula', 'drágea', 'frasco', 'ampola', 'frasco-ampola', 'bisnaga', 'tubo', 'pote', 'sachê', 'adesivo',
-  'supositório', 'óvulo', 'flaconete', 'carpule', 'seringa', 'unidade',
+  'comprimido', 'cápsula', 'drágea', 'frasco', 'ampola', 'frasco-ampola', 'bisnaga', 'tubo', 'pote', 'sachê', 'envelope',
+  'adesivo', 'supositório', 'óvulo', 'flaconete', 'carpule', 'seringa', 'unidade',
 ];
 
 // Como cada Unidade de dose se divide (decisão de 06/11/2026): o comprimido em meios e quartos; o ml em qualquer
