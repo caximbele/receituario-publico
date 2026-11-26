@@ -55,6 +55,10 @@ Conferido na tela da UPA, com outro paciente aberto: só a estrutura, sem ler va
 - O cadastro do paciente teste, lido por GET com os laços do Favorito, dá a data de nascimento (fora de fieldset), o CPF
   ("documentos basicos: cpf"), o endereço e o contato nas chaves de sempre.
 
+Na USF (26/11/2026), o topo é "UNIDADE DE SAUDE DA FAMILIA PIEDADE DO PARAOPEBA - UBS PIEDADE" e o almoxarifado tem o
+mesmo nome do Estabelecimento: o "Nome no iSaúde" já usado lá vale também na conferência pelo topo. A renovação de
+receita de outro dia só abre em Consultar (`/saude/prescription_renewals/{n}`), e o Favorito passou a aceitar essa tela.
+
 O paciente teste não tem atendimento na UPA, e criar um seria gravar no iSaúde. O teste de ponta a ponta do Favorito
 novo fica para a SOAP do paciente teste na USF, logado lá, que confere também a unidade pelo topo na USF. Na UPA, a
 primeira conferência de ponta a ponta é o primeiro uso real, pelo Prescritor, depois de publicado.
