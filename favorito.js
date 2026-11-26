@@ -11,7 +11,8 @@ export async function favorito(config) {
 
   const soap = /^\/saude\/receptions\/\d+\/soap_attendances\/\d+\/edit$/.test(location.pathname);
   const upa = /^\/saude\/receptions\/\d+\/clinical_attendances\/\d+\/edit$/.test(location.pathname);
-  const renovacao = /^\/saude\/prescription_renewals\/(\d+)\/edit$/.exec(location.pathname);
+  // Editar só abre para quem emitiu a renovação, no mesmo dia: as outras, o iSaúde só deixa Consultar, com o mesmo paciente.
+  const renovacao = /^\/saude\/prescription_renewals\/(\d+)(?:\/edit)?$/.exec(location.pathname);
   if (location.origin !== ISAUDE || !(soap || upa || renovacao)) return alert('Abra o favorito na tela de um atendimento ou de uma renovação de receita.');
 
   // Um nome logado vazio nunca bate.
