@@ -2,8 +2,8 @@
    formulário do item, a lista e a barra fixa no rodapé. Cabe numa tela de 1366×768. Nada é indicado só por cor: o erro, o alerta e o bloqueio levam o nome. */
 :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.35; }
 [hidden] { display: none !important; } /* vence o display: grid e flex dos blocos */
-/* O campo que recebe o foco não fica embaixo do topo nem da barra, que são fixos.
-   shortcut: alturas fixas, as maiores do topo e da barra em 1366×768; medir com JavaScript se elas passarem disso. */
+/* O campo que recebe o foco não fica embaixo do topo nem da barra, que são fixos (WCAG 2.4.11). Esta é a folga até a
+   primeira medida: a tela.js a troca pela altura deles, que cresce com o zoom, mais uma ou duas linhas de mensagem. */
 html { scroll-padding: 8rem 0 10rem; }
 body { margin: 0; background: #f1f5f9; color: #1e293b; }
 :focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
@@ -35,7 +35,8 @@ fieldset.quadro > legend { font-size: 1.1rem; font-weight: 700; }
 label { display: block; margin: .6rem 0 .25rem; font-weight: 600; }
 label.caixa { margin-top: 2.1rem; }
 input, select, button { font: inherit; }
-input, select { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1px solid #94a3b8; border-radius: 4px; background: #fff; color: #000; }
+/* A borda é o que mostra onde está o campo: 4,8:1 contra o branco, acima dos 3:1 (WCAG 1.4.11). */
+input, select { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1px solid #64748b; border-radius: 4px; background: #fff; color: #000; }
 input[type="checkbox"] { width: auto; margin: 0 .4rem 0 0; vertical-align: -.1rem; }
 input::placeholder { color: #475569; } /* a sugerida e o padrão, que valem com o campo em branco */
 option:disabled { color: #94a3b8; }
@@ -47,6 +48,15 @@ fieldset.etapas, fieldset.etapa, .padroes fieldset { margin: .75rem 0 0; padding
 #abrir-padroes { width: 100%; padding: .2rem 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 #abrir-padroes::before { content: "▸ "; }
 #abrir-padroes[aria-expanded="true"]::before { content: "▾ "; }
+/* A busca dos Padrões na linha do título, para o Novo item não descer (ADR 0013); numa tela estreita, ela desce. O
+   título cresce, para a linha toda, menos a busca, abrir e fechar a lista, como antes da busca. O alerta, quando há,
+   ocupa uma linha só dele, entre o título e a busca, e os achados não o cobrem. */
+.cabeca-padroes { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1.5rem; }
+.cabeca-padroes h2 { flex: 1; }
+.cabeca-padroes .alerta { flex-basis: 100%; margin: 0; }
+.cabeca-padroes .busca { display: flex; flex: 0 1 30rem; align-items: center; gap: .5rem; }
+.cabeca-padroes .busca label { margin: 0; white-space: nowrap; }
+.cabeca-padroes .combobox { flex: 1; }
 fieldset legend { padding: 0 .25rem; font-weight: 600; }
 #numero-de-etapas { width: auto; }
 .par { display: flex; gap: .5rem; }
@@ -71,7 +81,7 @@ fieldset legend { padding: 0 .25rem; font-weight: 600; }
 .botao:disabled { border: 1px dashed #64748b; background: #e2e8f0; color: #475569; cursor: not-allowed; }
 
 /* Renovar: o campo do texto colado e as linhas que não voltaram. */
-textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1px solid #94a3b8; border-radius: 4px; font: inherit; resize: vertical; }
+textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1px solid #64748b; border-radius: 4px; font: inherit; resize: vertical; }
 .resultado { margin: .5rem 0 0; }
 .nao-reconhecidas:empty { display: none; }
 .nao-reconhecidas { margin: .5rem 0 0; padding-left: 1.25rem; }
@@ -89,6 +99,9 @@ textarea { width: 100%; box-sizing: border-box; padding: .35rem .4rem; border: 1
 .barra .msgs p { margin-top: .2rem; }
 /* Muitos alertas rolam dentro da barra, para ela não tomar a tela. */
 #avisos-da-barra { max-height: 4.5rem; overflow-y: auto; }
+/* Numa janela baixa, como com zoom de 175% ou mais numa tela de 768 px, o topo e a barra fixos cobririam quase toda a
+   tela, e com 400% a tela inteira (WCAG 1.4.10 e 2.4.11): eles rolam com a página. Na media query, o px é o da janela. */
+@media (max-height: 400px) { .topo, .barra { position: static; } }
 
 /* A prévia, por cima da tela, com as folhas do tamanho do papel. */
 .previa { width: 100%; padding: 0; border: 1px solid #64748b; border-radius: 6px; background: #e2e8f0; }

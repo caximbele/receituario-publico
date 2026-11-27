@@ -6,7 +6,7 @@ import {
   UNIDADES_DE_DOSE_DO_TEXTO_LIVRE, UNIDADES_DE_FORNECIMENTO_DO_TEXTO_LIVRE, NOMES_DOS_TIPOS_DE_RECEITA,
 } from './src/montagem.js';
 import { VIAS_DE_ADMINISTRACAO } from './src/produto.js';
-import { buscarProdutos, descreverProduto } from './src/busca.js';
+import { buscarProdutos, descreverProduto, buscarPadroes } from './src/busca.js';
 import { idade } from './src/datas.js';
 import { textoParaColar } from './src/texto-para-colar.js';
 import { renovar } from './src/renovacao.js';
@@ -434,6 +434,8 @@ function atualizar() {
   const resultado = montar(itens);
   mostrarLista(resultado);
   mostrarBarra({ ...montarOQueSai(resultado), alertas: resultado.alertas });
+  // A barra pode ter mudado de altura, e o foco costuma andar logo depois.
+  medirFolga();
 }
 
 // Limpa o formulário para um item novo; na edição, o item da lista fica como estava. O cursor volta ao Medicamento.
@@ -517,6 +519,18 @@ function opcao(texto) {
   return li;
 }
 
+// Escolhida a opção pelo clique, a lista some na hora, e o 2º clique de um clique duplo cairia no que ela cobria (a
+// caixa "Fora do catálogo", um botão de Padrão): o mousedown e o clique seguintes são engolidos se forem desse 2º clique.
+function engolirCliqueDuplo() {
+  for (const tipo of ['mousedown', 'click']) {
+    document.addEventListener(tipo, (evento) => {
+      if (evento.detail < 2) return;
+      evento.preventDefault();
+      evento.stopPropagation();
+    }, { capture: true, once: true });
+  }
+}
+
 function abrirBusca() {
   const consulta = campoProduto.value.trim();
   if (consulta.length < MINIMO_DE_LETRAS) {
@@ -570,13 +584,14 @@ function fecharBusca() {
   ativo = -1;
 }
 
-// -1 é nenhum Produto em foco.
-function ativar(indice) {
+// -1 é nenhum Produto em foco. Pelo mouse, a opção já está à vista e não se rola: a página rolaria sob o ponteiro
+// parado, e o foco pularia para outra opção.
+function ativar(indice, rolar = true) {
   ativo = indice;
   for (const li of listaDeProdutos.querySelectorAll('[data-indice]')) {
     const este = Number(li.dataset.indice) === indice;
     li.setAttribute('aria-selected', String(este));
-    if (este) li.scrollIntoView({ block: 'nearest' });
+    if (este && rolar) li.scrollIntoView({ block: 'nearest' });
   }
   if (indice < 0) campoProduto.removeAttribute('aria-activedescendant');
   else campoProduto.setAttribute('aria-activedescendant', `opcao-produto-${indice}`);
@@ -630,13 +645,118 @@ campoProduto.addEventListener('keydown', (evento) => {
 campoProduto.addEventListener('blur', fecharBusca);
 // O clique na lista não tira o foco do campo, para o blur não a fechar antes do clique.
 listaDeProdutos.addEventListener('mousedown', (evento) => evento.preventDefault());
-listaDeProdutos.addEventListener('mouseover', ({ target }) => {
+// Só o mouse que se mexe põe um Produto em foco: o mouseover também vem quando a lista se refaz sob o ponteiro parado.
+listaDeProdutos.addEventListener('mousemove', ({ target }) => {
   const li = target.closest('[data-indice]');
-  if (li) ativar(Number(li.dataset.indice));
+  if (li) ativar(Number(li.dataset.indice), false);
 });
 listaDeProdutos.addEventListener('click', ({ target }) => {
   const li = target.closest('[data-indice]');
-  if (li) escolherProduto(mostrados[Number(li.dataset.indice)]);
+  if (!li) return;
+  engolirCliqueDuplo();
+  escolherProduto(mostrados[Number(li.dataset.indice)]);
+});
+
+// A busca dos Padrões, no mesmo padrão da busca do Medicamento, mas desde a 1ª letra e com o 1º Padrão achado já em foco,
+// para o Enter escolhê-lo: o Padrão só preenche o Novo item, e é o Enter de lá que o acrescenta (ADR 0011). Os achados
+// flutuam por cima da tela, e a lista por Grupo fica como está (ADR 0013). Escolhido o Padrão, o campo fica em branco.
+const campoPadrao = $('buscar-padrao');
+const listaDePadroes = $('lista-padroes');
+let padroesAchados = []; // as posições dos achados em dados/padroes.js
+let padraoAtivo = -1;
+
+function ativarPadrao(indice, rolar = true) {
+  padraoAtivo = indice;
+  for (const li of listaDePadroes.querySelectorAll('[data-indice]')) {
+    const este = Number(li.dataset.indice) === indice;
+    li.setAttribute('aria-selected', String(este));
+    if (este && rolar) li.scrollIntoView({ block: 'nearest' });
+  }
+  if (indice < 0) campoPadrao.removeAttribute('aria-activedescendant');
+  else campoPadrao.setAttribute('aria-activedescendant', `opcao-padrao-${indice}`);
+}
+
+function fecharPadroes() {
+  listaDePadroes.hidden = true;
+  listaDePadroes.replaceChildren();
+  campoPadrao.setAttribute('aria-expanded', 'false');
+  $('resumo-padroes').textContent = '';
+  padroesAchados = [];
+  ativarPadrao(-1);
+}
+
+function abrirPadroes() {
+  if (!campoPadrao.value.trim()) {
+    fecharPadroes();
+    return;
+  }
+  padroesAchados = buscarPadroes(padroes, campoPadrao.value);
+  const opcoes = padroesAchados.map((posicao, i) => {
+    const li = opcao(padroes[posicao].nome);
+    li.id = `opcao-padrao-${i}`;
+    li.dataset.indice = String(i);
+    return li;
+  });
+  if (!opcoes.length) {
+    const li = opcao('Nenhum Padrão encontrado');
+    li.className = 'sem-escolha';
+    li.setAttribute('aria-disabled', 'true');
+    opcoes.push(li);
+  }
+  listaDePadroes.replaceChildren(...opcoes);
+  listaDePadroes.hidden = false;
+  campoPadrao.setAttribute('aria-expanded', 'true');
+  ativarPadrao(padroesAchados.length ? 0 : -1);
+  $('resumo-padroes').textContent = padroesAchados.length
+    ? contagem(padroesAchados.length, 'Padrão encontrado', 'Padrões encontrados') : 'Nenhum Padrão encontrado';
+}
+
+function escolherPadrao(indice) {
+  const posicao = padroesAchados[indice];
+  campoPadrao.value = '';
+  fecharPadroes();
+  usarPadrao(posicao);
+}
+
+campoPadrao.addEventListener('input', abrirPadroes);
+// As setas vão do 1º achado ao último e voltam ao campo, como na busca do Medicamento. Esc fecha a lista e, com ela já
+// fechada, limpa o campo.
+campoPadrao.addEventListener('keydown', (evento) => {
+  const aberta = !listaDePadroes.hidden;
+  const ultimo = padroesAchados.length - 1;
+  switch (evento.key) {
+    case 'ArrowDown':
+    case 'ArrowUp':
+      evento.preventDefault();
+      if (!aberta) abrirPadroes();
+      else if (padroesAchados.length && evento.key === 'ArrowDown') ativarPadrao(padraoAtivo === ultimo ? -1 : padraoAtivo + 1);
+      else if (padroesAchados.length) ativarPadrao(padraoAtivo === -1 ? ultimo : padraoAtivo - 1);
+      break;
+    case 'Enter':
+      evento.preventDefault();
+      if (aberta && padraoAtivo >= 0) escolherPadrao(padraoAtivo);
+      break;
+    case 'Escape':
+      evento.preventDefault();
+      if (aberta) fecharPadroes();
+      else campoPadrao.value = '';
+      break;
+    default:
+  }
+});
+campoPadrao.addEventListener('blur', fecharPadroes);
+// O clique na lista não tira o foco do campo, para o blur não a fechar antes do clique.
+listaDePadroes.addEventListener('mousedown', (evento) => evento.preventDefault());
+// Como no Medicamento: só o mouse que se mexe tira o foco do 1º achado, sem rolar a página.
+listaDePadroes.addEventListener('mousemove', ({ target }) => {
+  const li = target.closest('[data-indice]');
+  if (li) ativarPadrao(Number(li.dataset.indice), false);
+});
+listaDePadroes.addEventListener('click', ({ target }) => {
+  const li = target.closest('[data-indice]');
+  if (!li) return;
+  engolirCliqueDuplo();
+  escolherPadrao(Number(li.dataset.indice));
 });
 
 form.addEventListener('submit', (evento) => evento.preventDefault());
@@ -646,9 +766,10 @@ form.addEventListener('change', ({ target }) => {
   if (target !== campoProduto) tocados.add(target.id);
   atualizar();
 });
-// Enter adiciona o item, ou grava a edição; Esc limpa o formulário, ou cancela a edição. Num botão, Enter é dele.
+// Enter adiciona o item, ou grava a edição; Esc limpa o formulário, ou cancela a edição. Num botão, Enter é dele. A
+// tecla segurada não conta: o Enter segurado que escolheu um Padrão o acrescentaria sem a revisão (ADR 0011).
 form.addEventListener('keydown', (evento) => {
-  if (evento.defaultPrevented || evento.isComposing) return;
+  if (evento.defaultPrevented || evento.isComposing || evento.repeat) return;
   if (evento.key === 'Enter' && !(evento.target instanceof HTMLButtonElement)) {
     evento.preventDefault();
     salvar();
@@ -782,6 +903,18 @@ $('tipoDeReceita').replaceChildren(...NOMES_DOS_TIPOS_DE_RECEITA.map((t) => new 
 $('paciente-ficticio').replaceChildren(...demonstracao.pacientes.map((p) => new Option(p.nome, p.id)));
 // A data de início em branco é a de emissão, e o calendário não oferece datas anteriores à de hoje.
 $('inicio').min = hoje();
+// A folga de rolagem do foco é a altura do topo e da barra, fixos no alto e no pé da tela, mais 45 px para uma ou duas
+// linhas de mensagem do campo (WCAG 2.4.11). Ela se mede quando eles mudam de altura e no fim de cada atualizar(), antes
+// de o foco andar, porque o ResizeObserver só avisa no quadro seguinte. Na janela baixa, eles rolam com a página
+// (estilo.css), e não há o que descontar.
+function medirFolga() {
+  const folga = (el) => (getComputedStyle(el).position === 'sticky' ? `${el.offsetHeight + 45}px` : '0px');
+  document.documentElement.style.scrollPaddingTop = folga(document.querySelector('.topo'));
+  document.documentElement.style.scrollPaddingBottom = folga($('barra'));
+}
+const observarFolga = new ResizeObserver(medirFolga);
+observarFolga.observe(document.querySelector('.topo'));
+observarFolga.observe($('barra'));
 
 // Aberta direto, sem window.opener, a página é a demonstração. Aberta pelo Favorito, ela pede os dados à tela do
 // iSaúde e espera; sem eles, vai para o erro e nunca cai na demonstração. O formulário e a barra só aparecem com os

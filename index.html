@@ -43,10 +43,24 @@
     </section>
 
     <!-- Os Padrões (ADR 0011): o clique preenche o Novo item, e o Enter o acrescenta. Some abaixo de 12 anos. O botão do
-         título abre a lista, que começa sempre fechada (ADR 0013); o alerta fica entre o título e a lista. -->
+         título abre a lista, que começa sempre fechada (ADR 0013). A busca fica na linha do título, e os Padrões achados
+         aparecem por cima da tela, sem abrir a lista. O alerta fica entre o título e a busca, numa linha só dele, para os
+         achados não o cobrirem, e continua entre o título e a lista. -->
     <section class="quadro padroes" id="quadro-padroes" aria-labelledby="titulo-padroes">
-      <h2 id="titulo-padroes"><button type="button" id="abrir-padroes" aria-expanded="false" aria-controls="grupos-padroes">Padrões</button></h2>
-      <p class="alerta" id="alerta-padroes" role="status"></p>
+      <div class="cabeca-padroes">
+        <h2 id="titulo-padroes"><button type="button" id="abrir-padroes" aria-expanded="false" aria-controls="grupos-padroes">Padrões</button></h2>
+        <p class="alerta" id="alerta-padroes" role="status"></p>
+        <div class="busca">
+          <label for="buscar-padrao">Buscar Padrão</label>
+          <div class="combobox">
+            <input id="buscar-padrao" type="text" autocomplete="off" spellcheck="false" aria-describedby="alerta-padroes"
+              role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lista-padroes">
+            <!-- tabindex="-1", como na lista do Medicamento. -->
+            <ul id="lista-padroes" class="resultados" role="listbox" aria-label="Padrões encontrados" tabindex="-1" hidden></ul>
+          </div>
+          <p class="so-leitor" id="resumo-padroes" role="status"></p>
+        </div>
+      </div>
       <div id="grupos-padroes" hidden></div>
     </section>
 
@@ -81,7 +95,9 @@
             <input id="produto" type="text" autocomplete="off" spellcheck="false"
               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lista-produtos"
               aria-describedby="ajuda-busca msgs-produto">
-            <ul id="lista-produtos" class="resultados" role="listbox" aria-label="Produtos encontrados" hidden></ul>
+            <!-- tabindex="-1": a lista com rolagem não vira parada do Tab (Chrome 130+), que a esconderia no meio da
+                 troca de foco e deixaria o foco no body. -->
+            <ul id="lista-produtos" class="resultados" role="listbox" aria-label="Produtos encontrados" tabindex="-1" hidden></ul>
           </div>
           <p class="ajuda" id="ajuda-busca">Nome, concentração ou forma, com ao menos 3 letras. Setas e Enter escolhem.</p>
           <!-- A contagem só para o leitor de tela: a lista já a mostra a quem enxerga. -->

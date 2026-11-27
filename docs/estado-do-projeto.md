@@ -14,6 +14,7 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
   só de adulto, de 12 anos para cima.
 - **O atendimento da USF** (27/11/2026, publicado): a lista dos Padrões começa fechada, para o Novo item ficar à vista
   (ADR 0013).
+- **A busca dos Padrões** (27/11/2026): achar o Padrão pelo nome, sem abrir nem percorrer a lista.
 - **Fora do escopo:** a Prescrição de uso interno (ADR 0010) e a pediatria por peso ou idade nos Padrões (versão 2). A
   pediatria continua no Novo item, com a dose digitada pelo Prescritor, como sempre.
 
@@ -38,7 +39,7 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
 | `src/padroes.js` | Quando o quadro Padrões aparece (`quadroDosPadroes`). |
 | `src/mensagem.js` | A mensagem do Favorito: telas aceitas (`TELAS`), sexo por extenso, nome sem o prontuário. |
 | `src/renovacao.js`, `src/texto-para-colar.js` | A Renovação e o Texto para colar. |
-| `src/busca.js`, `src/produto.js`, `src/texto.js`, `src/datas.js`, `src/folhas.js` | Busca, nome do Produto, números e plurais, datas e idade, folhas do impresso. |
+| `src/busca.js`, `src/produto.js`, `src/texto.js`, `src/datas.js`, `src/folhas.js` | Busca de Produtos e de Padrões, nome do Produto, números e plurais, datas e idade, folhas do impresso. |
 | `impresso.js` | O impresso: Vias e folhas. |
 | `favorito.js` | O Favorito, que roda dentro do iSaúde. Não pode ter `import`: a página "Criar o favorito" o transforma em link pelo `toString()`. |
 | `favorito.html`, `criar-favorito.js` | A página "Criar o favorito": o Prescritor preenche os seus dados e os das unidades, e arrasta o link. |
@@ -48,7 +49,7 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
 | `docs/padroes-para-conferir.md` | Os Padrões aprovados, com a Frase de cada um, as notas da revisão e as fontes. |
 | `docs/pesquisa/tela-da-upa.md` | O DOM da tela da UPA, o cadastro do paciente, a unidade logada e o que foi conferido. |
 | `docs/superpowers/plans/2026-11-26-prescritor-da-upa.md` | O plano do prescritor da UPA, já executado, menos a conferência na UPA (os passos não foram marcados). |
-| `tests/` | Os testes do motor, dos Padrões, da mensagem e do Favorito (`node:test`). |
+| `tests/` | Os testes do motor, dos Padrões e da busca deles, da mensagem e do Favorito (`node:test`). |
 | `CONTEXT.md`, `docs/adr/` | O glossário e as decisões (ADRs 0009 a 0013). |
 | `docs/estado-do-projeto.md` | Este arquivo. |
 | `.claude/launch.json` | O servidor local na porta 8123. Fica fora do git (`.git/info/exclude`). |
@@ -66,7 +67,11 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
   `tests/padroes.test.js` confere a volta de todos os Padrões.
 - **A tela** (`tela.js`) guarda só a lista de itens e chama a Montagem a cada mudança. `mostrarTopo` decide se o quadro
   Padrões aparece; `usarPadrao` preenche o Novo item com uma cópia do Padrão; o botão `#abrir-padroes` abre e fecha a
-  lista.
+  lista. A busca `#buscar-padrao`, na linha do título, mostra por cima da tela os Padrões que `buscarPadroes`
+  (`src/busca.js`) acha, no padrão da busca do Medicamento, mas com o 1º achado já em foco: o Enter o passa a
+  `usarPadrao`. Nas duas buscas, só o mouse que se mexe muda a opção em foco, sem rolar a página, e o 2º clique de um
+  clique duplo é engolido (`engolirCliqueDuplo`). `medirFolga` põe na folga de rolagem do foco a altura do topo e da
+  barra fixos, mais 45 px; ela roda no fim de `atualizar()` e quando eles mudam de altura.
 - **O impresso** (`impresso.js`) mede a altura no papel para repartir as Vias em folhas (A4 retrato, ou 2 Vias lado a
   lado em A4 paisagem).
 - **Conferir na página:** a demonstração (página aberta sem o Favorito) tem 3 pacientes fictícios, todos com data de
@@ -77,7 +82,7 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
 - **Rodar:** o servidor "receituario" do `.claude/launch.json`, em `http://localhost:8123/`. Os módulos ES não carregam
   em `file://`. O `.claude/` fica só neste computador (`.git/info/exclude`); num clone novo, qualquer servidor HTTP
   estático na porta 8123 serve, de preferência sem cache.
-- **Testar:** `node --test tests/` (Node 26). Em 27/11/2026 eram 99 testes, todos passando.
+- **Testar:** `node --test tests/` (Node 26). Em 27/11/2026 eram 103 testes, todos passando.
 - **O Favorito:** a regra fica em `favorito.js`; os testes simulam os globais do navegador em `tests/favorito.test.js`.
   No iSaúde, ele se confere rodando o mesmo código pelo console da página, com `alert` interceptado e `window.open`
   trocado por uma função que devolve `null`: o código para nas conferências de tela, nome e unidade, sem abrir a
@@ -88,7 +93,8 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
   `git -c credential.helper=manager push origin main`. O Pages leva cerca de um minuto, e o navegador guarda os
   arquivos por até 10 minutos. Para conferir o que foi publicado: `curl` no arquivo em
   `https://caximbele.github.io/receituario-publico/` com um `?v=` qualquer, e um `grep` simples.
-- **Revisões:** a de acessibilidade se faz na página, pelo navegador do app (teclado, foco, contraste, alvo de 24 px).
+- **Revisões:** a de acessibilidade se faz na página, pelo navegador do app (teclado, foco, contraste do texto e das
+  bordas, alvo de 24 px, zoom de 200% e 400%).
   A revisão de código no nível máximo usa muitos agentes e custa caro: só quando o Prescritor pedir.
 - **Depois de publicar uma mudança em `favorito.js`:** o Prescritor recria o Favorito na página "Criar o favorito",
   recarregada com Ctrl+F5, e apaga o antigo. O link leva o código dentro, e o Favorito antigo continua com o código
@@ -137,6 +143,49 @@ Em 27/11/2026, publicado a pedido do Prescritor:
   título dentro do `<summary>` (o JAWS não o achava) levaram ao botão no título; os outros eram deste arquivo e do ADR
   0013. Ficou de fora só o que "nova" quer dizer em "Renovação de receita (nova e em Editar)", abaixo.
 
+Em 27/11/2026, depois, a pedido do Prescritor:
+
+- **A busca dos Padrões:** o campo "Buscar Padrão", na linha do título do quadro, acha o Padrão pelo nome como a busca
+  do Medicamento acha o Produto: cada palavra digitada é o começo de uma palavra do nome, sem acento ("dipi feb",
+  "cistite"). Os achados aparecem por cima da tela, sem abrir a lista por Grupo, e o 1º já vem em foco: o Enter o
+  escolhe, as setas, o mouse e o clique escolhem outro. O Padrão preenche o Novo item como o clique na lista, e o campo
+  fica em branco. Esc fecha os achados e, com eles já fechados, limpa o campo. O título continua abrindo e fechando a
+  lista pela linha toda, menos a busca, e o Favorito não precisa ser recriado. Conferido na demonstração, em 1366×768:
+  as setas, o Enter, o clique, o Esc, o clique fora; o Padrão por Etapa põe o foco na Posologia; o quadro some para a
+  criança; a lista por Grupo abre e fecha como antes; nenhum erro no console.
+- **A revisão de acessibilidade da busca**, pelo navegador do app, sem Lighthouse nem axe. A busca passou em:
+  - nome, papel e estado da combobox, da lista e das opções;
+  - teclado e foco visível;
+  - contraste do texto e alvo de 24 px;
+  - zoom de 200% e 400% sem rolagem lateral, e espaçamento de texto ampliado.
+
+  Ela achou dois problemas antigos, da página toda, e os dois foram corrigidos:
+  - a borda dos campos tinha 2,56:1 contra o branco, abaixo dos 3:1 (WCAG 1.4.11), e passou a 4,76:1 (`#64748b`, o
+    cinza da borda dos botões);
+  - a folga fixa de rolagem deixava o topo cobrir o campo em foco quando ele crescia com o zoom (WCAG 2.4.11). Agora
+    a `tela.js` mede a altura do topo e da barra, como no item seguinte.
+- **A revisão de código no nível máximo** da busca e dessas correções (5 olhares, 13 verificações e 1 varredura), com
+  15 achados, todos corrigidos e conferidos no Chrome:
+  - o mouse parado onde a lista abre tirava o foco do 1º achado, e passar o mouse nas opções de baixo rolava a página:
+    nas duas buscas, só o mouse que se mexe muda a opção em foco, sem rolar;
+  - o 2º clique de um clique duplo num achado caía no que a lista cobria (a caixa "Fora do catálogo", um botão de
+    Padrão): agora ele é engolido, nas duas buscas;
+  - o Tab com uma lista longa aberta deixava o foco no body (no Chrome 130+, a lista com rolagem vira parada do Tab):
+    as duas listas têm `tabindex="-1"`;
+  - o Enter segurado acrescentava o Padrão sem a revisão do ADR 0011: o formulário ignora a tecla repetida;
+  - uma consulta só com sinal ("+", o acento antes da vogal) achava os 71 Padrões e destacava a Dipirona: agora não
+    acha nada;
+  - os achados cobriam o alerta sem data de nascimento: o alerta tem uma linha só dele, entre o título e a busca, e o
+    campo o cita no `aria-describedby`;
+  - a folga do foco medida pelo `ResizeObserver` chegava um quadro atrasada: aberta pelo Favorito com zoom de 125%, o
+    Medicamento ficava inteiro embaixo da barra. `medirFolga` roda também no fim de `atualizar()`, soma 45 px para a
+    mensagem do campo e é zero quando o topo e a barra não são fixos;
+  - com zoom de 175% ou mais (janela abaixo de 400 px de altura), o topo e a barra rolam com a página: com 400%, eles
+    cobriam a tela inteira;
+  - a busca acha "500mg" como "500 mg", nas duas buscas; "d3" e "b12" continuam uma palavra só;
+  - o botão do título voltou a ocupar a linha toda, menos a busca;
+  - o texto deste arquivo e o comentário de `src/busca.js`.
+
 Conferido no iSaúde:
 
 - Em 27/11/2026, o Prescritor confirmou que o Favorito publicado funciona na SOAP e na Renovação de receita (nova e em
@@ -159,6 +208,9 @@ Conferido no iSaúde:
 - **"Nova" em "Renovação de receita (nova e em Editar)":** perguntar ao Prescritor o que conferiu, porque o
   Favorito não aceita `/new`.
 - **Leitor de tela:** a página nunca foi testada com NVDA ou JAWS.
+- **Revisão automática:** nunca rodou. O Lighthouse roda pelo F12 do Chrome (aba Lighthouse), sem baixar nada; o axe
+  exige download, com o OK do Prescritor.
+- **A busca dos Padrões de verdade:** conferir na USF e na UAI, pelo Favorito, num atendimento.
 - **A renovação em Consultar** (`/saude/prescription_renewals/{n}`): o Favorito a aceita, mas ainda não foi conferida
   no iSaúde.
 - **A lista dos Padrões fechada na USF de verdade:** conferir num atendimento, e conferir o alerta sem data de
