@@ -8,9 +8,12 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
 - **O Receituário:** uma página estática que monta e imprime a Receita de alta a partir do paciente aberto no iSaúde,
   com as regras das normas sanitárias: Tipo de receituário, Quantidade a dispensar e Vias. Nada do paciente sai da
   memória da página: sem armazenamento, sem URL e sem rede (a política da página tem `connect-src 'none'`).
-- **O prescritor da UPA** (26 e 27/11/2026, publicado; falta a conferência na UAI, nas Pendências): levar o Receituário à tela de atendimento da UPA, a
-  "UAI" (Setor UAI PIEDADE da UPA de Brumadinho), com o quadro Padrões, que traz os medicamentos de uso comum com Dose,
-  Posologia, duração e Quantidade definidas pelo Prescritor. Os Padrões são só de adulto, de 12 anos para cima.
+- **O prescritor da UPA** (26 e 27/11/2026, publicado; falta a conferência na UAI, nas Pendências): levar o
+  Receituário à tela de atendimento da UPA, a "UAI" (Setor UAI PIEDADE da UPA de Brumadinho), com o quadro Padrões, que
+  traz os medicamentos de uso comum com Dose, Posologia, duração e Quantidade definidas pelo Prescritor. Os Padrões são
+  só de adulto, de 12 anos para cima.
+- **O atendimento da USF** (27/11/2026, publicado): a lista dos Padrões começa fechada, para o Novo item ficar à vista
+  (ADR 0013).
 - **Fora do escopo:** a Prescrição de uso interno (ADR 0010) e a pediatria por peso ou idade nos Padrões (versão 2). A
   pediatria continua no Novo item, com a dose digitada pelo Prescritor, como sempre.
 
@@ -46,6 +49,28 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
 | `docs/pesquisa/tela-da-upa.md` | O DOM da tela da UPA, o cadastro do paciente, a unidade logada e o que foi conferido. |
 | `docs/superpowers/plans/2026-11-26-prescritor-da-upa.md` | O plano do prescritor da UPA, já executado, menos a conferência na UPA (os passos não foram marcados). |
 | `tests/` | Os testes do motor, dos Padrões, da mensagem e do Favorito (`node:test`). |
+| `CONTEXT.md`, `docs/adr/` | O glossário e as decisões (ADRs 0009 a 0013). |
+| `docs/estado-do-projeto.md` | Este arquivo. |
+| `.claude/launch.json` | O servidor local na porta 8123. Fica fora do git (`.git/info/exclude`). |
+| `Backup/` | A auditoria do iSaúde de 12 e 13/11/2026 (como o iSaúde gera os PDFs, os achados, as amostras). Fica fora do git (`/Backup/` no `.git/info/exclude` deste computador). Para entendê-la, ler primeiro `Backup/README.md` e `Backup/CONTEXTO-PARA-CLAUDE.md`. |
+
+## Como o código está montado
+
+- **A Montagem** (`montarReceita`, em `src/montagem.js`) recebe o paciente, o Prescritor, a unidade, a emissão, o
+  catálogo e os itens, e devolve, por item, a Frase, a conta, os erros e os alertas; as Receitas separadas por Tipo de
+  receituário; e os bloqueios (CPF, justificativa, Notificação de Receita). As tabelas que mandam nela: `TIPOS_DE_RECEITA`
+  (Vias, validade, CPF), `FORMAS` (Unidades de dose por forma), `POSOLOGIAS` (tipos de Posologia e como contam as
+  Tomadas) e `TETOS_DA_DOSE`. Cada regra cita a norma ou a decisão que a criou.
+- **A Renovação** (`src/renovacao.js`) só devolve a linha do Texto para colar se, montada de novo, ela der a mesma Frase
+  sob o mesmo título de Receituário. Por isso uma mudança na Frase pode impedir a Renovação de Receitas antigas:
+  `tests/padroes.test.js` confere a volta de todos os Padrões.
+- **A tela** (`tela.js`) guarda só a lista de itens e chama a Montagem a cada mudança. `mostrarTopo` decide se o quadro
+  Padrões aparece; `usarPadrao` preenche o Novo item com uma cópia do Padrão; o botão `#abrir-padroes` abre e fecha a
+  lista.
+- **O impresso** (`impresso.js`) mede a altura no papel para repartir as Vias em folhas (A4 retrato, ou 2 Vias lado a
+  lado em A4 paisagem).
+- **Conferir na página:** a demonstração (página aberta sem o Favorito) tem 3 pacientes fictícios, todos com data de
+  nascimento; o caso sem data só aparece com o Favorito.
 
 ## Como rodar, testar e publicar
 
@@ -61,7 +86,10 @@ fim de cada tarefa, atualize as seções "O que foi feito" e "Pendências".
   o GitHub Pages serve em `https://caximbele.github.io/receituario-publico/`. O Git deste computador vem sem
   `credential.helper`, e o push só passa com o Git Credential Manager:
   `git -c credential.helper=manager push origin main`. O Pages leva cerca de um minuto, e o navegador guarda os
-  arquivos por até 10 minutos.
+  arquivos por até 10 minutos. Para conferir o que foi publicado: `curl` no arquivo em
+  `https://caximbele.github.io/receituario-publico/` com um `?v=` qualquer, e um `grep` simples.
+- **Revisões:** a de acessibilidade se faz na página, pelo navegador do app (teclado, foco, contraste, alvo de 24 px).
+  A revisão de código no nível máximo usa muitos agentes e custa caro: só quando o Prescritor pedir.
 - **Depois de publicar uma mudança em `favorito.js`:** o Prescritor recria o Favorito na página "Criar o favorito",
   recarregada com Ctrl+F5, e apaga o antigo. O link leva o código dentro, e o Favorito antigo continua com o código
   antigo.
@@ -105,8 +133,11 @@ Em 27/11/2026, publicado a pedido do Prescritor:
   Novo item e põe o foco na Dose (ou na Posologia, quando a Dose é por Etapa), e o quadro some para a criança.
 - **Os dados do Prescritor** saíram de `docs/padroes-para-conferir.md` e de `tests/favorito.test.js`. O histórico do
   GitHub continua com eles.
+- **As revisões:** a de acessibilidade e uma revisão de código no nível máximo, com 15 achados. A posição do alerta e o
+  título dentro do `<summary>` (o JAWS não o achava) levaram ao botão no título; os outros eram deste arquivo e do ADR
+  0013. Ficou de fora só o que "nova" quer dizer em "Renovação de receita (nova e em Editar)", abaixo.
 
-Conferido antes de 27/11/2026:
+Conferido no iSaúde:
 
 - Em 27/11/2026, o Prescritor confirmou que o Favorito publicado funciona na SOAP e na Renovação de receita (nova e em
   Editar).
@@ -125,6 +156,9 @@ Conferido antes de 27/11/2026:
   nomes que servem, fica com o mais longo. Isso separa a UAI da UPA central. Mas não há teste desse caso, a ajuda de
   "Criar o favorito" ainda diz "antes do ' - '", e o ADR 0012 fala só do Estabelecimento.
 - **A renovação nova antes de salvar:** o Favorito não aceita a página `/saude/prescription_renewals/new`.
+- **"Nova" em "Renovação de receita (nova e em Editar)":** perguntar ao Prescritor o que conferiu, porque o
+  Favorito não aceita `/new`.
+- **Leitor de tela:** a página nunca foi testada com NVDA ou JAWS.
 - **A renovação em Consultar** (`/saude/prescription_renewals/{n}`): o Favorito a aceita, mas ainda não foi conferida
   no iSaúde.
 - **A lista dos Padrões fechada na USF de verdade:** conferir num atendimento, e conferir o alerta sem data de
@@ -149,6 +183,7 @@ Conferido antes de 27/11/2026:
 
 ## O que ficou no "prescritor"
 
-O repositório "prescritor" não está disponível (ADR 0009). Lá ficaram os ADRs 0001 a 0008, a spec e o glossário completo das Fases 1 a 3 (termos como Montagem, Frase e Texto
-para colar não estão no `CONTEXT.md`), o
-`docs/pesquisa/leitura-do-isaude.md` (citado em `favorito.js`) e o gerador do catálogo, `construir-catalogo.js`.
+O repositório "prescritor" não está disponível (ADR 0009). Lá ficaram os ADRs 0001 a 0008, a spec e o glossário
+completo das Fases 1 a 3 (termos como Montagem, Frase e Texto para colar não estão no `CONTEXT.md`), o
+`docs/pesquisa/leitura-do-isaude.md` (citado em `favorito.js`) e o gerador do catálogo, `construir-catalogo.js`. Os
+comentários do código citam os tickets e as decisões de lá; as regras estão escritas no próprio código.
