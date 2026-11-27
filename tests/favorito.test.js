@@ -55,11 +55,11 @@ test('recusa a lista das renovações', async () => {
 
 // O Prescritor pode copiar o nome como o topo mostra: "{número} - {NOME} - {especialidade}".
 test('aceita o nome do Prescritor copiado do topo', async () => {
-  assert.deepEqual(await rodar('/saude/prescription_renewals/546', '5476 - FULANO DE TAL - CLINICA MÉDICA'), { alertas: [], abriu: true });
+  assert.deepEqual(await rodar('/saude/prescription_renewals/546', '1234 - FULANO DE TAL - CLINICA MÉDICA'), { alertas: [], abriu: true });
 });
 
 test('recusa outro profissional', async () => {
-  for (const nome of ['Beltrano', '5476 - BELTRANO - CLINICA MÉDICA', 'Fulano']) {
+  for (const nome of ['Beltrano', '1234 - BELTRANO - CLINICA MÉDICA', 'Fulano']) {
     assert.deepEqual(await rodar('/saude/prescription_renewals/546', nome), { alertas: ['Este favorito é de outro profissional.'], abriu: false });
   }
 });

@@ -1,6 +1,6 @@
 # Padrões para conferir
 
-Lista feita a partir do catálogo do prescritor antigo (`Cristovao/Prescritor/catalogo.js`) e revista em 26/11/2026
+Lista feita a partir do catálogo do prescritor antigo (`catalogo.js` do repositório "prescritor") e revista em 26/11/2026
 pela bula e pela literatura. Cada Padrão foi passado pelo `montarReceita` desta página: a coluna "Na Receita" é o que
 sairia impresso, com as Recomendações depois da Quantidade.
 

@@ -659,6 +659,12 @@ form.addEventListener('keydown', (evento) => {
 });
 for (const botao of form.querySelectorAll('.atalhos button')) botao.addEventListener('click', () => usarAtalho(botao.dataset));
 montarPadroes();
+// O título abre e fecha a lista dos Padrões, que começa fechada (ADR 0013).
+$('abrir-padroes').addEventListener('click', () => {
+  const abrir = $('grupos-padroes').hidden;
+  $('grupos-padroes').hidden = !abrir;
+  $('abrir-padroes').setAttribute('aria-expanded', String(abrir));
+});
 $('grupos-padroes').addEventListener('click', ({ target }) => {
   if (target.dataset.padrao !== undefined) usarPadrao(Number(target.dataset.padrao));
 });

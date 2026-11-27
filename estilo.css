@@ -42,6 +42,11 @@ option:disabled { color: #94a3b8; }
 /* As Etapas, cada uma no seu quadro, dentro do quadro delas. */
 fieldset.etapas, fieldset.etapa, .padroes fieldset { margin: .75rem 0 0; padding: 0 .75rem .5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
 .padroes .alerta:empty { display: none; }
+/* O botão do título abre e fecha a lista dos Padrões, com a seta que diz o estado. O padding leva o alvo acima de 24 px
+   de altura (WCAG 2.5.8). */
+#abrir-padroes { width: 100%; padding: .2rem 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+#abrir-padroes::before { content: "▸ "; }
+#abrir-padroes[aria-expanded="true"]::before { content: "▾ "; }
 fieldset legend { padding: 0 .25rem; font-weight: 600; }
 #numero-de-etapas { width: auto; }
 .par { display: flex; gap: .5rem; }

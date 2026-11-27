@@ -42,11 +42,12 @@
       <ul class="nao-reconhecidas" id="nao-reconhecidas" aria-label="Linhas que não voltaram"></ul>
     </section>
 
-    <!-- Os Padrões (ADR 0011): o clique preenche o Novo item, e o Enter o acrescenta. Some abaixo de 12 anos. -->
+    <!-- Os Padrões (ADR 0011): o clique preenche o Novo item, e o Enter o acrescenta. Some abaixo de 12 anos. O botão do
+         título abre a lista, que começa sempre fechada (ADR 0013); o alerta fica entre o título e a lista. -->
     <section class="quadro padroes" id="quadro-padroes" aria-labelledby="titulo-padroes">
-      <h2 id="titulo-padroes">Padrões</h2>
+      <h2 id="titulo-padroes"><button type="button" id="abrir-padroes" aria-expanded="false" aria-controls="grupos-padroes">Padrões</button></h2>
       <p class="alerta" id="alerta-padroes" role="status"></p>
-      <div id="grupos-padroes"></div>
+      <div id="grupos-padroes" hidden></div>
     </section>
 
     <!-- Enter adiciona o item (ou grava a edição), e Esc limpa o formulário (ou cancela a edição). -->
